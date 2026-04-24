@@ -4,8 +4,10 @@
  */
 
 import { useState, useRef, useCallback } from 'react';
-import { Plus, Trash2, Printer, Upload } from 'lucide-react';
+import { Plus, Trash2, Printer, Upload, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from './contexts/AuthContext';
+import AuthPage from './components/AuthPage';
 
 interface QuotationItem {
   id: string;
@@ -141,6 +143,23 @@ export default function App() {
 
   const handlePrint = () => window.print();
 
+  const { user, loading, signOut } = useAuth();
+
+  // While Supabase resolves the session, show a minimal loader
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-500">Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!user) return <AuthPage />;
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       {/* Navigation */}
@@ -163,6 +182,20 @@ export default function App() {
               <Printer size={16} />
               Print / Save PDF
             </button>
+            {/* User Menu */}
+            <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-medium text-gray-800 truncate max-w-[150px]">{user.email}</p>
+              </div>
+              <button
+                onClick={signOut}
+                title="Sign out"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors"
+              >
+                <LogOut size={14} />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
+            </div>
           </div>
         </div>
       </nav>
