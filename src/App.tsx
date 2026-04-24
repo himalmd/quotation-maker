@@ -66,9 +66,16 @@ export default function App() {
   });
 
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+  const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
+  const [discountValue, setDiscountValue] = useState<number>(0);
 
   const subTotal = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const total = subTotal; // Simple for now, can add tax later
+  const discountAmount = discountValue > 0
+    ? discountType === 'percentage'
+      ? Math.min((subTotal * discountValue) / 100, subTotal)
+      : Math.min(discountValue, subTotal)
+    : 0;
+  const total = subTotal - discountAmount;
 
   const addItem = () => {
     const newItem: QuotationItem = {
@@ -261,14 +268,63 @@ export default function App() {
                 </AnimatePresence>
               </div>
 
-              <div className="mt-8 flex flex-col items-end gap-2 border-t pt-6">
+              <div className="mt-8 flex flex-col items-end gap-3 border-t pt-6">
                 <div className="flex w-full max-w-xs justify-between text-sm text-gray-500">
                   <span>Sub Total:</span>
-                  <span className="font-semibold text-gray-900">USD {subTotal}</span>
+                  <span className="font-semibold text-gray-900">USD {subTotal.toFixed(2)}</span>
                 </div>
+
+                {/* Discount Controls */}
+                <div className="flex w-full items-center gap-3 flex-wrap py-2">
+                  <span className="text-sm font-medium text-gray-500 mr-1">Discount:</span>
+                  <div className="flex rounded-lg bg-gray-100 p-0.5">
+                    <button
+                      onClick={() => setDiscountType('percentage')}
+                      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                        discountType === 'percentage' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      % Percentage
+                    </button>
+                    <button
+                      onClick={() => setDiscountType('fixed')}
+                      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                        discountType === 'fixed' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      $ Fixed
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-medium text-gray-400">
+                      {discountType === 'percentage' ? '%' : 'USD'}
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      max={discountType === 'percentage' ? 100 : undefined}
+                      value={discountValue || ''}
+                      onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                      className="w-24 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                      placeholder={discountType === 'percentage' ? '0' : '0.00'}
+                    />
+                  </div>
+                  {discountAmount > 0 && (
+                    <span className="text-xs text-green-600 font-semibold ml-auto">
+                      Saving USD {discountAmount.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+
+                {discountAmount > 0 && (
+                  <div className="flex w-full max-w-xs justify-between text-sm text-green-600">
+                    <span>Discount ({discountType === 'percentage' ? `${discountValue}%` : `USD ${discountValue}`}):</span>
+                    <span className="font-semibold">- USD {discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex w-full max-w-xs justify-between border-t pt-2 text-lg font-bold text-blue-600">
                   <span>Total:</span>
-                  <span>USD {total}</span>
+                  <span>USD {total.toFixed(2)}</span>
                 </div>
               </div>
             </section>
@@ -348,15 +404,24 @@ export default function App() {
                   <h4 className="text-xl font-bold text-gray-800">Thank You</h4>
                   <p className="text-gray-600">Estimated Delivery Time: {data.deliveryTime}</p>
                 </div>
-                <div className="flex flex-col items-end gap-8">
+                <div className="flex flex-col items-end gap-4">
                   <div className="flex gap-12 items-center">
-                    <span className="text-2xl font-bold text-gray-800">Sub Total:</span>
-                    <span className="text-2xl font-bold text-gray-800">USD {subTotal}</span>
+                    <span className="text-lg font-semibold text-gray-600">Sub Total:</span>
+                    <span className="text-lg font-semibold text-gray-800">USD {subTotal.toFixed(2)}</span>
                   </div>
+
+                  {discountAmount > 0 && (
+                    <div className="flex gap-12 items-center">
+                      <span className="text-lg font-semibold text-gray-600">
+                        Discount ({discountType === 'percentage' ? `${discountValue}%` : `USD ${discountValue}`}):
+                      </span>
+                      <span className="text-lg font-semibold text-green-600">- USD {discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
 
                   <div className="w-full bg-[#3498db] flex justify-between items-center px-6 py-3 text-white">
                     <span className="text-xl font-bold uppercase tracking-widest">Total:</span>
-                    <span className="text-xl font-bold">USD {total}</span>
+                    <span className="text-xl font-bold">USD {total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
