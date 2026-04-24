@@ -1,0 +1,5 @@
+{
+  "name": "Qualon Quotation Generator",
+  "description": "Professional quotation creation tool for Qualon with automatic price calculation and PDF-ready formatting.",
+  "requestFramePermissions": []
+}
