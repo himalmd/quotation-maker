@@ -129,7 +129,7 @@ export default function EditTab({
                             : <Sparkles size={11} />}
                           {aiLoading[item.id]
                             ? 'Generating…'
-                            : <><Sparkles size={11} />AI Generate<span className="ml-1 rounded-full bg-purple-100 dark:bg-purple-900 px-1.5 py-0.5 text-[9px] font-bold text-purple-500 dark:text-purple-300">{CREDIT_COSTS.ITEM_REWRITE}</span></>
+                            : <>AI Generate<span className="ml-1 rounded-full bg-purple-100 dark:bg-purple-900 px-1.5 py-0.5 text-[9px] font-bold text-purple-500 dark:text-purple-300">{CREDIT_COSTS.ITEM_REWRITE}</span></>
                           }
                         </button>
                       </div>

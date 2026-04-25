@@ -1,6 +1,8 @@
 import { Printer, Wand2, Zap, LogOut, Sun, Moon } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { BrandSettings } from '../../types';
+import logoPrimary from '../../assets/logo-primary.webp';
+import logoWhite   from '../../assets/logo-white.webp';
 
 type Tab = 'ai' | 'edit' | 'preview' | 'brand';
 
@@ -46,12 +48,13 @@ export default function AppNav({
   return (
     <nav className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-4 print:hidden">
       <div className="flex items-center justify-between">
-        {/* Logo */}
+        {/* App Logo — always uses QuoteSuite brand assets */}
         <div className="flex items-center">
-          {brand.logoDataUrl
-            ? <img src={brand.logoDataUrl} alt="Logo" className="h-14 object-contain" />
-            : <span className="text-xl font-bold tracking-widest text-gray-800 dark:text-gray-100">{brand.companyName}</span>
-          }
+          <img
+            src={isDark ? logoWhite : logoPrimary}
+            alt="QuoteSuite"
+            className="h-10 object-contain"
+          />
         </div>
 
         <div className="flex items-center gap-3">
