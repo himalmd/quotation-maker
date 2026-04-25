@@ -198,7 +198,7 @@ export default function App() {
           <BrandTab brand={brand} updateBrand={updateBrand} handleImageUpload={handleImageUpload} />
         </div>
         <div className={`${activeTab === 'edit'    ? 'block' : 'hidden'} print:hidden`}>
-          <EditTab data={data} setData={setData} discountType={discountType} setDiscountType={setDiscountType} discountValue={discountValue} setDiscountValue={setDiscountValue} taxRate={taxRate} setTaxRate={setTaxRate} terms={terms} setTerms={setTerms} subTotal={subTotal} discountAmount={discountAmount} taxAmount={taxAmount} total={total} cur={cur} aiLoading={aiLoading} handleAIGenerate={handleAIGenerate} addItem={addItem} removeItem={removeItem} updateItem={updateItem} />
+          <EditTab data={data} setData={setData} brand={brand} layout={layout} discountType={discountType} setDiscountType={setDiscountType} discountValue={discountValue} setDiscountValue={setDiscountValue} taxRate={taxRate} setTaxRate={setTaxRate} terms={terms} setTerms={setTerms} subTotal={subTotal} discountAmount={discountAmount} taxAmount={taxAmount} total={total} cur={cur} aiLoading={aiLoading} handleAIGenerate={handleAIGenerate} addItem={addItem} removeItem={removeItem} updateItem={updateItem} />
         </div>
         <div className={`${activeTab === 'preview' ? 'block' : 'hidden'} print:block`}>
           <PreviewTab data={data} brand={brand} discountType={discountType} discountValue={discountValue} discountAmount={discountAmount} taxRate={taxRate} taxAmount={taxAmount} subTotal={subTotal} total={total} cur={cur} terms={terms} layout={layout} setLayout={setLayout} />
