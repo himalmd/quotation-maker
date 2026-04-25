@@ -7,15 +7,17 @@ import { useState, useCallback } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import AuthPage from './components/AuthPage';
 import OutOfCreditsModal from './components/OutOfCreditsModal';
+import PrintModal from './components/PrintModal';
 import AppNav from './components/layout/AppNav';
 import AITab from './components/tabs/AITab';
 import BrandTab from './components/tabs/BrandTab';
 import EditTab from './components/tabs/EditTab';
 import PreviewTab from './components/tabs/PreviewTab';
 import { generateItemDescription, extractQuotationFromConversation } from './lib/gemini';
-import { loadBrand, DEFAULT_BRAND } from './lib/brandStorage';
+import { loadBrand } from './lib/brandStorage';
 import { useCredits, CREDIT_COSTS } from './hooks/useCredits';
-import type { QuotationData, QuotationItem, BrandSettings } from './types';
+import { useTheme } from './hooks/useTheme';
+import type { QuotationData, QuotationItem, BrandSettings, LayoutId } from './types';
 
 type Tab = 'ai' | 'edit' | 'preview' | 'brand';
 
@@ -41,9 +43,11 @@ export default function App() {
   // ── Auth ──────────────────────────────────────────────────────────────────
   const { user, loading, signOut } = useAuth();
   const { credits, canAfford, deductCredits } = useCredits();
+  const { isDark, toggleTheme } = useTheme();
 
   // ── Core state ────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<Tab>('ai');
+  const [layout, setLayout] = useState<LayoutId>('classic');
   const [data, setData] = useState<QuotationData>(DEFAULT_DATA);
   const [brand, setBrand] = useState<BrandSettings>(loadBrand);
 
@@ -59,6 +63,7 @@ export default function App() {
   const [aiExtracting, setAiExtracting] = useState(false);
   const [aiSuccess, setAiSuccess] = useState<{ itemCount: number; clientName: string } | null>(null);
   const [showOutOfCredits, setShowOutOfCredits] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   // ── Computed totals ───────────────────────────────────────────────────────
   const subTotal = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -140,10 +145,10 @@ export default function App() {
   // ── Auth gates ────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-qs-bg">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">Loading…</p>
+          <div className="w-8 h-8 border-4 border-qs-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-qs-text-sec">Loading…</p>
         </div>
       </div>
     );
@@ -152,8 +157,25 @@ export default function App() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen">
       <OutOfCreditsModal open={showOutOfCredits} onClose={() => setShowOutOfCredits(false)} />
+      <PrintModal
+        open={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        layout={layout}
+        setLayout={setLayout}
+        data={data}
+        brand={brand}
+        discountType={discountType}
+        discountValue={discountValue}
+        discountAmount={discountAmount}
+        taxRate={taxRate}
+        taxAmount={taxAmount}
+        subTotal={subTotal}
+        total={total}
+        cur={cur}
+        terms={terms}
+      />
 
       <AppNav
         activeTab={activeTab}
@@ -161,9 +183,11 @@ export default function App() {
         brand={brand}
         credits={credits}
         setShowOutOfCredits={setShowOutOfCredits}
-        handlePrint={() => window.print()}
+        onOpenPrintModal={() => setShowPrintModal(true)}
         user={user}
         signOut={signOut}
+        isDark={isDark}
+        toggleTheme={toggleTheme}
       />
 
       <main className="p-6 print:p-0">
@@ -174,10 +198,10 @@ export default function App() {
           <BrandTab brand={brand} updateBrand={updateBrand} handleImageUpload={handleImageUpload} />
         </div>
         <div className={`${activeTab === 'edit'    ? 'block' : 'hidden'} print:hidden`}>
-          <EditTab data={data} setData={setData} discountType={discountType} setDiscountType={setDiscountType} discountValue={discountValue} setDiscountValue={setDiscountValue} taxRate={taxRate} setTaxRate={setTaxRate} terms={terms} setTerms={setTerms} subTotal={subTotal} discountAmount={discountAmount} taxAmount={taxAmount} total={total} cur={cur} aiLoading={aiLoading} handleAIGenerate={handleAIGenerate} addItem={addItem} removeItem={removeItem} updateItem={updateItem} />
+          <EditTab data={data} setData={setData} brand={brand} layout={layout} discountType={discountType} setDiscountType={setDiscountType} discountValue={discountValue} setDiscountValue={setDiscountValue} taxRate={taxRate} setTaxRate={setTaxRate} terms={terms} setTerms={setTerms} subTotal={subTotal} discountAmount={discountAmount} taxAmount={taxAmount} total={total} cur={cur} aiLoading={aiLoading} handleAIGenerate={handleAIGenerate} addItem={addItem} removeItem={removeItem} updateItem={updateItem} />
         </div>
         <div className={`${activeTab === 'preview' ? 'block' : 'hidden'} print:block`}>
-          <PreviewTab data={data} brand={brand} discountType={discountType} discountValue={discountValue} discountAmount={discountAmount} taxRate={taxRate} taxAmount={taxAmount} subTotal={subTotal} total={total} cur={cur} terms={terms} />
+          <PreviewTab data={data} brand={brand} discountType={discountType} discountValue={discountValue} discountAmount={discountAmount} taxRate={taxRate} taxAmount={taxAmount} subTotal={subTotal} total={total} cur={cur} terms={terms} layout={layout} setLayout={setLayout} />
         </div>
       </main>
 

@@ -1,4 +1,5 @@
-export interface QuotationItem {
+export type LayoutId = 'classic' | 'modern' | 'bold' | 'minimal';
+
   id: string;
   description: string;
   details: string[];
