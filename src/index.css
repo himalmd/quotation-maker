@@ -1,8 +1,76 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
 
+/* Enable class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── QuoteSuite Color System ─────────────────────────────────── */
+:root {
+  --qs-primary:        #1E6BFF;
+  --qs-hover:          #0B3C8C;
+  --qs-secondary:      #4DA3FF;
+  --qs-soft:           #E6F0FF;
+  --qs-soft-hover:     #D0E3FF;
+
+  --qs-bg:             #F8FAFC;
+  --qs-surface:        #FFFFFF;
+  --qs-inset:          #F1F5F9;
+  --qs-border:         #E2E8F0;
+
+  --qs-text:           #0F172A;
+  --qs-text-sec:       #64748B;
+  --qs-text-muted:     #94A3B8;
+
+  --qs-btn-sec-text:   #1E6BFF;
+
+  --qs-success:        #22C55E;
+  --qs-warning:        #F59E0B;
+  --qs-error:          #EF4444;
+  --qs-info:           #0EA5E9;
+}
+
+.dark {
+  --qs-hover:          #4DA3FF;
+  --qs-soft:           #1E293B;
+  --qs-soft-hover:     #253549;
+
+  --qs-bg:             #020617;
+  --qs-surface:        #0B1220;
+  --qs-inset:          #0F172A;
+  --qs-border:         #1E293B;
+
+  --qs-text:           #E2E8F0;
+  --qs-text-sec:       #94A3B8;
+  --qs-text-muted:     #64748B;
+
+  --qs-btn-sec-text:   #E2E8F0;
+}
+
+/* ── Register as Tailwind color tokens ───────────────────────── */
+@theme inline {
+  --color-qs-primary:      var(--qs-primary);
+  --color-qs-hover:        var(--qs-hover);
+  --color-qs-secondary:    var(--qs-secondary);
+  --color-qs-soft:         var(--qs-soft);
+  --color-qs-soft-hover:   var(--qs-soft-hover);
+  --color-qs-bg:           var(--qs-bg);
+  --color-qs-surface:      var(--qs-surface);
+  --color-qs-inset:        var(--qs-inset);
+  --color-qs-border:       var(--qs-border);
+  --color-qs-text:         var(--qs-text);
+  --color-qs-text-sec:     var(--qs-text-sec);
+  --color-qs-text-muted:   var(--qs-text-muted);
+  --color-qs-btn-sec-text: var(--qs-btn-sec-text);
+  --color-qs-success:      var(--qs-success);
+  --color-qs-warning:      var(--qs-warning);
+  --color-qs-error:        var(--qs-error);
+  --color-qs-info:         var(--qs-info);
+}
+
 @layer base {
   html, body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--qs-bg);
+    color: var(--qs-text);
   }
 }
