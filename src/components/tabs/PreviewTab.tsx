@@ -1,4 +1,8 @@
-import type { QuotationData, BrandSettings } from '../../types';
+import type { QuotationData, BrandSettings, LayoutId } from '../../types';
+import ClassicLayout from '../layouts/ClassicLayout';
+import ModernLayout  from '../layouts/ModernLayout';
+import BoldLayout    from '../layouts/BoldLayout';
+import MinimalLayout from '../layouts/MinimalLayout';
 
 interface PreviewTabProps {
   data: QuotationData;
@@ -12,151 +16,141 @@ interface PreviewTabProps {
   total: number;
   cur: string;
   terms: string;
+  layout: LayoutId;
+  setLayout: (l: LayoutId) => void;
 }
+
+const LAYOUTS: { id: LayoutId; name: string; description: string; preview: React.ReactNode }[] = [
+  {
+    id: 'classic',
+    name: 'Classic',
+    description: 'Traditional bordered table',
+    preview: (
+      <svg viewBox="0 0 60 80" className="w-full h-full">
+        <rect width="60" height="80" fill="white" />
+        <rect x="4" y="4" width="20" height="6" rx="1" fill="#e5e7eb" />
+        <rect x="4" y="14" width="52" height="4" rx="1" fill="#cbd5e1" opacity="0.5" />
+        <rect x="4" y="22" width="52" height="3" rx="0" fill="#94a3b8" />
+        <rect x="4" y="25" width="52" height="2.5" rx="0" fill="#e2e8f0" />
+        <rect x="4" y="27.5" width="52" height="2.5" rx="0" fill="#f8fafc" />
+        <rect x="4" y="30" width="52" height="2.5" rx="0" fill="#e2e8f0" />
+        <rect x="36" y="40" width="20" height="2" rx="1" fill="#e5e7eb" />
+        <rect x="36" y="44" width="20" height="2" rx="1" fill="#e5e7eb" />
+        <rect x="36" y="50" width="20" height="5" rx="1" fill="#3b82f6" />
+      </svg>
+    ),
+  },
+  {
+    id: 'modern',
+    name: 'Modern',
+    description: 'Left accent, clean rows',
+    preview: (
+      <svg viewBox="0 0 60 80" className="w-full h-full">
+        <rect width="60" height="80" fill="white" />
+        <rect x="0" y="0" width="3" height="80" fill="#3b82f6" />
+        <rect x="7" y="5" width="18" height="5" rx="1" fill="#e5e7eb" />
+        <rect x="7" y="16" width="46" height="3" rx="1" fill="#1e293b" />
+        <rect x="7" y="21" width="46" height="2.5" rx="0" fill="#f1f5f9" />
+        <rect x="7" y="23.5" width="46" height="2.5" rx="0" fill="white" />
+        <rect x="7" y="26" width="46" height="2.5" rx="0" fill="#f1f5f9" />
+        <rect x="7" y="28.5" width="46" height="2.5" rx="0" fill="white" />
+        <rect x="32" y="40" width="22" height="2" rx="1" fill="#e5e7eb" />
+        <rect x="32" y="44" width="22" height="2" rx="1" fill="#e5e7eb" />
+        <rect x="32" y="49" width="22" height="5" rx="2" fill="#3b82f6" />
+      </svg>
+    ),
+  },
+  {
+    id: 'bold',
+    name: 'Bold',
+    description: 'Dark header, executive style',
+    preview: (
+      <svg viewBox="0 0 60 80" className="w-full h-full">
+        <rect width="60" height="80" fill="white" />
+        <rect x="0" y="0" width="60" height="18" fill="#1e293b" />
+        <rect x="4" y="5" width="16" height="8" rx="1" fill="white" opacity="0.2" />
+        <rect x="0" y="18" width="60" height="5" fill="#3b82f6" />
+        <rect x="4" y="28" width="52" height="2" rx="0" fill="#cbd5e1" />
+        <rect x="4" y="31" width="52" height="2.5" rx="0" fill="#f8fafc" />
+        <rect x="4" y="33.5" width="52" height="2.5" rx="0" fill="white" />
+        <rect x="4" y="36" width="52" height="2.5" rx="0" fill="#f8fafc" />
+        <rect x="30" y="50" width="26" height="2" rx="1" fill="#e5e7eb" />
+        <rect x="30" y="54" width="26" height="2" rx="1" fill="#e5e7eb" />
+        <rect x="30" y="59" width="26" height="6" rx="1" fill="#1e293b" />
+        <rect x="0" y="74" width="60" height="6" fill="#3b82f6" />
+      </svg>
+    ),
+  },
+  {
+    id: 'minimal',
+    name: 'Minimal',
+    description: 'Clean lines, elegant spacing',
+    preview: (
+      <svg viewBox="0 0 60 80" className="w-full h-full">
+        <rect width="60" height="80" fill="white" />
+        <rect x="4" y="5" width="18" height="5" rx="1" fill="#e5e7eb" />
+        <rect x="42" y="4" width="14" height="1.5" rx="0" fill="#3b82f6" />
+        <rect x="42" y="7" width="14" height="1.5" rx="0.5" fill="#cbd5e1" />
+        <rect x="42" y="10" width="14" height="1.5" rx="0.5" fill="#cbd5e1" />
+        <rect x="4" y="18" width="52" height="1" rx="0" fill="#f1f5f9" />
+        <rect x="4" y="23" width="52" height="1" rx="0" fill="#3b82f6" opacity="0.8" />
+        <rect x="4" y="26" width="52" height="1" rx="0" fill="#f1f5f9" />
+        <rect x="4" y="29" width="52" height="1" rx="0" fill="#f1f5f9" />
+        <rect x="4" y="32" width="52" height="1" rx="0" fill="#f1f5f9" />
+        <rect x="4" y="35" width="52" height="1" rx="0" fill="#f1f5f9" />
+        <rect x="32" y="47" width="24" height="1" rx="0" fill="#e5e7eb" />
+        <rect x="32" y="50" width="24" height="1" rx="0" fill="#e5e7eb" />
+        <rect x="32" y="55" width="24" height="1.5" rx="0" fill="#3b82f6" />
+        <rect x="32" y="57" width="24" height="3" rx="0" fill="white" />
+        <text x="32" y="61" fontSize="5" fontWeight="bold" fill="#3b82f6">TOTAL</text>
+      </svg>
+    ),
+  },
+];
 
 export default function PreviewTab({
   data, brand, discountType, discountValue, discountAmount,
   taxRate, taxAmount, subTotal, total, cur, terms,
+  layout, setLayout,
 }: PreviewTabProps) {
+  const layoutProps = { data, brand, discountType, discountValue, discountAmount, taxRate, taxAmount, subTotal, total, cur, terms };
+
+  const LayoutComponent =
+    layout === 'modern'  ? ModernLayout  :
+    layout === 'bold'    ? BoldLayout    :
+    layout === 'minimal' ? MinimalLayout :
+    ClassicLayout;
+
   return (
-    <div className="flex justify-center bg-gray-100 py-10 print:bg-white print:p-0">
-      <div className="w-[210mm] min-h-[297mm] bg-white p-12 shadow-2xl print:shadow-none">
-
-        {/* Logo */}
-        <div className="mb-12 flex items-start justify-between">
-          {brand.logoDataUrl
-            ? <img src={brand.logoDataUrl} alt="Logo" className="h-16 object-contain" />
-            : <span className="text-2xl font-bold tracking-widest" style={{ color: brand.primaryColor }}>{brand.companyName}</span>
-          }
-        </div>
-
-        {/* Quotation Bar */}
-        <div className="relative mb-12 flex items-center justify-end">
-          <div className="absolute left-0 right-0 h-10 opacity-20" style={{ backgroundColor: brand.primaryColor }} />
-          <div className="z-10 bg-white px-4 py-2 flex items-center gap-4">
-            <h1 className="text-4xl font-light tracking-[0.2em] text-gray-700 uppercase">QUOTATION</h1>
-            <div className="h-10 w-10" style={{ backgroundColor: brand.primaryColor }} />
-          </div>
-        </div>
-
-        {/* Client & Meta */}
-        <div className="mb-12 flex justify-between">
-          <div>
-            <h3 className="text-2xl font-light text-gray-800 mb-2">Quotation to:</h3>
-            <p className="text-gray-600">For: {data.clientName}</p>
-          </div>
-          <div className="text-right">
-            <div className="flex justify-end gap-8 mb-1">
-              <span className="font-bold text-gray-800">Quotation #</span>
-              <span className="text-gray-600 min-w-[100px]">{data.quotationNumber}</span>
-            </div>
-            <div className="flex justify-end gap-8">
-              <span className="font-bold text-gray-800">Date</span>
-              <span className="text-gray-600 min-w-[100px]">
-                {new Date(data.date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Table */}
-        <table className="w-full border-collapse mb-8">
-          <thead>
-            <tr className="text-white text-sm" style={{ backgroundColor: brand.darkColor }}>
-              <th className="border border-gray-300 px-4 py-3 font-semibold text-center w-12">SL</th>
-              <th className="border border-gray-300 px-6 py-3 font-semibold text-left">Item Description</th>
-              <th className="border border-gray-300 px-4 py-3 font-semibold text-center w-24">Price</th>
-              <th className="border border-gray-300 px-4 py-3 font-semibold text-center w-20">Qty.</th>
-              <th className="border border-gray-300 px-4 py-3 font-semibold text-center w-32">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item, index) => (
-              <tr key={item.id} className="text-sm text-gray-700">
-                <td className="border border-gray-300 px-4 py-4 text-center font-bold align-top">{index + 1}</td>
-                <td className="border border-gray-300 px-6 py-4 align-top">
-                  <div className="font-bold text-gray-800 mb-2">{item.description}</div>
-                  <ul className="list-decimal list-inside space-y-1 text-gray-600 pl-2">
-                    {item.details.map((detail, i) => <li key={i}>{detail}</li>)}
-                  </ul>
-                </td>
-                <td className="border border-gray-300 px-4 py-4 text-center align-top whitespace-nowrap">{cur} {item.price}</td>
-                <td className="border border-gray-300 px-4 py-4 text-center align-top">{item.quantity}</td>
-                <td className="border border-gray-300 px-4 py-4 text-center align-top whitespace-nowrap">{cur} {item.price * item.quantity}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Totals */}
-        <div className="flex flex-col items-end gap-12">
-          <div className="flex justify-between w-full">
-            <div className="space-y-4">
-              <h4 className="text-xl font-bold text-gray-800">Thank You</h4>
-              <p className="text-gray-600">Estimated Delivery Time: {data.deliveryTime}</p>
-            </div>
-            <div className="flex flex-col items-end gap-4">
-              <div className="flex gap-12 items-center">
-                <span className="text-lg font-semibold text-gray-600">Sub Total:</span>
-                <span className="text-lg font-semibold text-gray-800">{cur} {subTotal.toFixed(2)}</span>
+    <div>
+      {/* Layout Selector — hidden on print */}
+      <div className="mb-6 print:hidden">
+        <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-3">Choose Layout</p>
+        <div className="grid grid-cols-4 gap-4">
+          {LAYOUTS.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setLayout(l.id)}
+              className={`rounded-xl border-2 p-3 text-left transition-all hover:shadow-md ${
+                layout === l.id
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 shadow-md'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
+            >
+              {/* Mini preview */}
+              <div className={`w-full h-20 mb-2 rounded overflow-hidden border ${layout === l.id ? 'border-blue-200 dark:border-blue-800' : 'border-gray-100 dark:border-gray-700'}`}>
+                {l.preview}
               </div>
-              {discountAmount > 0 && (
-                <div className="flex gap-12 items-center">
-                  <span className="text-lg font-semibold text-gray-600">
-                    Discount ({discountType === 'percentage' ? `${discountValue}%` : `${cur} ${discountValue}`}):
-                  </span>
-                  <span className="text-lg font-semibold text-green-600">- {cur} {discountAmount.toFixed(2)}</span>
-                </div>
-              )}
-              {taxAmount > 0 && (
-                <div className="flex gap-12 items-center">
-                  <span className="text-lg font-semibold text-gray-600">Tax ({taxRate}%):</span>
-                  <span className="text-lg font-semibold text-gray-700">+ {cur} {taxAmount.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="w-full flex justify-between items-center px-6 py-3 text-white" style={{ backgroundColor: brand.primaryColor }}>
-                <span className="text-xl font-bold uppercase tracking-widest">Total:</span>
-                <span className="text-xl font-bold">{cur} {total.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Signature */}
-          <div className="mt-8 text-center self-end mr-8">
-            {brand.signDataUrl && (
-              <div className="mb-[-15px]">
-                <img src={brand.signDataUrl} alt="Authorized Signature" className="mx-auto h-24 object-contain" />
-              </div>
-            )}
-            <div className="w-48 border-t-2 border-gray-800 mx-auto pt-2">
-              <span className="font-bold text-gray-800">Authorized Sign</span>
-            </div>
-          </div>
+              <p className={`text-xs font-bold ${layout === l.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{l.name}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{l.description}</p>
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Terms & Conditions */}
-        {terms.trim() && (
-          <div className="mt-10 border-t pt-6">
-            <h5 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Terms &amp; Conditions</h5>
-            <ol className="space-y-1">
-              {terms.split('\n').filter(Boolean).map((line, i) => (
-                <li key={i} className="text-[11px] text-gray-500 leading-relaxed">{line}</li>
-              ))}
-            </ol>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="mt-auto pt-10 text-center">
-          <div className="pt-4 flex justify-center gap-4 text-[11px] text-gray-500 font-medium whitespace-nowrap flex-wrap" style={{ borderTop: `1px solid ${brand.primaryColor}` }}>
-            {brand.phone   && <span>{brand.phone}</span>}
-            {brand.phone   && brand.address && <span style={{ color: brand.primaryColor }} className="hidden sm:inline">|</span>}
-            {brand.address && <span>{brand.address}</span>}
-            {brand.address && brand.website && <span style={{ color: brand.primaryColor }} className="hidden sm:inline">|</span>}
-            {brand.website && <span>{brand.website}</span>}
-          </div>
-        </div>
-
+      {/* A4 Preview */}
+      <div className="flex justify-center bg-gray-100 dark:bg-gray-950 py-10 print:bg-white print:p-0">
+        <LayoutComponent {...layoutProps} />
       </div>
     </div>
   );

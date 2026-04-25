@@ -16,7 +16,7 @@ import { generateItemDescription, extractQuotationFromConversation } from './lib
 import { loadBrand } from './lib/brandStorage';
 import { useCredits, CREDIT_COSTS } from './hooks/useCredits';
 import { useTheme } from './hooks/useTheme';
-import type { QuotationData, QuotationItem, BrandSettings } from './types';
+import type { QuotationData, QuotationItem, BrandSettings, LayoutId } from './types';
 
 type Tab = 'ai' | 'edit' | 'preview' | 'brand';
 
@@ -46,6 +46,7 @@ export default function App() {
 
   // ── Core state ────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<Tab>('ai');
+  const [layout, setLayout] = useState<LayoutId>('classic');
   const [data, setData] = useState<QuotationData>(DEFAULT_DATA);
   const [brand, setBrand] = useState<BrandSettings>(loadBrand);
 
@@ -181,7 +182,7 @@ export default function App() {
           <EditTab data={data} setData={setData} discountType={discountType} setDiscountType={setDiscountType} discountValue={discountValue} setDiscountValue={setDiscountValue} taxRate={taxRate} setTaxRate={setTaxRate} terms={terms} setTerms={setTerms} subTotal={subTotal} discountAmount={discountAmount} taxAmount={taxAmount} total={total} cur={cur} aiLoading={aiLoading} handleAIGenerate={handleAIGenerate} addItem={addItem} removeItem={removeItem} updateItem={updateItem} />
         </div>
         <div className={`${activeTab === 'preview' ? 'block' : 'hidden'} print:block`}>
-          <PreviewTab data={data} brand={brand} discountType={discountType} discountValue={discountValue} discountAmount={discountAmount} taxRate={taxRate} taxAmount={taxAmount} subTotal={subTotal} total={total} cur={cur} terms={terms} />
+          <PreviewTab data={data} brand={brand} discountType={discountType} discountValue={discountValue} discountAmount={discountAmount} taxRate={taxRate} taxAmount={taxAmount} subTotal={subTotal} total={total} cur={cur} terms={terms} layout={layout} setLayout={setLayout} />
         </div>
       </main>
 
