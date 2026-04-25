@@ -145,10 +145,10 @@ export default function App() {
   // ── Auth gates ────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-qs-bg">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">Loading…</p>
+          <div className="w-8 h-8 border-4 border-qs-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-qs-text-sec">Loading…</p>
         </div>
       </div>
     );
@@ -157,7 +157,7 @@ export default function App() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen">
       <OutOfCreditsModal open={showOutOfCredits} onClose={() => setShowOutOfCredits(false)} />
       <PrintModal
         open={showPrintModal}

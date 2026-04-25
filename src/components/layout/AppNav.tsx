@@ -29,8 +29,8 @@ export default function AppNav({
       onClick={() => setActiveTab(tab)}
       className={`rounded-md px-4 py-2 text-sm font-medium transition-all flex items-center gap-1.5 ${
         activeTab === tab
-          ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-gray-100'
-          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+          ? 'bg-qs-surface shadow-sm text-qs-text'
+          : 'text-qs-text-muted hover:text-qs-text'
       }`}
     >
       {label}
@@ -38,15 +38,15 @@ export default function AppNav({
   );
 
   const creditClass = credits === null
-    ? 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500'
+    ? 'border-qs-border text-qs-text-muted'
     : credits === 0
-    ? 'border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900'
+    ? 'border-qs-error bg-red-50 text-qs-error cursor-pointer hover:bg-red-100 dark:bg-red-950 dark:hover:bg-red-900'
     : credits <= 20
-    ? 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400'
-    : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300';
+    ? 'border-qs-warning bg-amber-50 text-qs-warning dark:bg-amber-950'
+    : 'border-qs-border bg-qs-bg text-qs-text-sec';
 
   return (
-    <nav className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-4 print:hidden">
+    <nav className="sticky top-0 z-10 border-b border-qs-border bg-qs-surface px-6 py-4 print:hidden">
       <div className="flex items-center justify-between">
         {/* App Logo — always uses QuoteSuite brand assets */}
         <div className="flex items-center">
@@ -59,7 +59,7 @@ export default function AppNav({
 
         <div className="flex items-center gap-3">
           {/* Tab switcher */}
-          <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
+          <div className="flex rounded-lg bg-qs-inset p-1">
             {tabBtn('ai', <><Wand2 size={14} />AI</>)}
             {tabBtn('brand', 'Brand')}
             {tabBtn('edit', 'Edit')}
@@ -70,7 +70,7 @@ export default function AppNav({
           <button
             onClick={toggleTheme}
             title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded-lg border border-qs-border bg-qs-bg text-qs-text-muted hover:bg-qs-inset transition-colors"
           >
             {isDark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
@@ -81,7 +81,7 @@ export default function AppNav({
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${creditClass}`}
             title="AI Credits remaining"
           >
-            <Zap size={12} className={credits !== null && credits <= 20 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-gray-500'} />
+            <Zap size={12} className={credits !== null && credits <= 20 ? 'text-qs-warning' : 'text-qs-text-muted'} />
             {credits === null ? '…' : `${credits} credits`}
           </button>
 
@@ -89,7 +89,7 @@ export default function AppNav({
           {(activeTab === 'edit' || activeTab === 'preview') && (
             <button
               onClick={onOpenPrintModal}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-qs-primary px-4 py-2 text-sm font-medium text-white hover:bg-qs-hover transition-colors"
             >
               <Printer size={16} />
               Print / Save PDF
@@ -97,14 +97,14 @@ export default function AppNav({
           )}
 
           {/* User Menu */}
-          <div className="flex items-center gap-3 pl-3 border-l border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate max-w-[150px] hidden sm:block">
+          <div className="flex items-center gap-3 pl-3 border-l border-qs-border">
+            <p className="text-xs font-medium text-qs-text truncate max-w-[150px] hidden sm:block">
               {user?.email}
             </p>
             <button
               onClick={signOut}
               title="Sign out"
-              className="flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg border border-qs-border px-3 py-2 text-xs font-medium text-qs-text-sec hover:bg-qs-inset hover:text-qs-error transition-colors"
             >
               <LogOut size={14} />
               <span className="hidden sm:inline">Sign out</span>

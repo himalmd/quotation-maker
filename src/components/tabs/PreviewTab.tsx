@@ -125,7 +125,7 @@ export default function PreviewTab({
     <div>
       {/* Layout Selector — hidden on print */}
       <div className="mb-6 print:hidden">
-        <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-3">Choose Layout</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-qs-text-sec mb-3">Choose Layout</p>
         <div className="grid grid-cols-4 gap-4">
           {LAYOUTS.map((l) => (
             <button
@@ -133,23 +133,23 @@ export default function PreviewTab({
               onClick={() => setLayout(l.id)}
               className={`rounded-xl border-2 p-3 text-left transition-all hover:shadow-md ${
                 layout === l.id
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 shadow-md'
-                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                  ? 'border-qs-primary bg-qs-soft shadow-md'
+                  : 'border-qs-border bg-qs-surface hover:border-qs-text-muted'
               }`}
             >
               {/* Mini preview */}
-              <div className={`w-full h-20 mb-2 rounded overflow-hidden border ${layout === l.id ? 'border-blue-200 dark:border-blue-800' : 'border-gray-100 dark:border-gray-700'}`}>
+              <div className={`w-full h-20 mb-2 rounded overflow-hidden border ${layout === l.id ? 'border-qs-primary/40' : 'border-qs-border'}`}>
                 {l.preview}
               </div>
-              <p className={`text-xs font-bold ${layout === l.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{l.name}</p>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{l.description}</p>
+              <p className={`text-xs font-bold ${layout === l.id ? 'text-qs-primary' : 'text-qs-text'}`}>{l.name}</p>
+              <p className="text-[10px] text-qs-text-muted mt-0.5">{l.description}</p>
             </button>
           ))}
         </div>
       </div>
 
       {/* A4 Preview */}
-      <div className="flex justify-center bg-gray-100 dark:bg-gray-950 py-10 print:bg-white print:p-0">
+      <div className="flex justify-center bg-qs-inset py-10 print:bg-white print:p-0">
         <LayoutComponent {...layoutProps} />
       </div>
     </div>

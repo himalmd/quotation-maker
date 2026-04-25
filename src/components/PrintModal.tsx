@@ -128,7 +128,7 @@ export default function PrintModal({ open, layout, setLayout, onClose, ...layout
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-qs-text/40 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -138,18 +138,18 @@ export default function PrintModal({ open, layout, setLayout, onClose, ...layout
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ type: 'spring', duration: 0.3 }}
-            className="fixed inset-4 z-50 flex flex-col rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+            className="fixed inset-4 z-50 flex flex-col rounded-2xl bg-qs-surface shadow-2xl border border-qs-border overflow-hidden"
             style={{ maxWidth: 1100, maxHeight: 820, margin: 'auto' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-qs-border flex-shrink-0">
               <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Print / Save PDF</h2>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Select a layout, preview your quotation, then print or save as PDF.</p>
+                <h2 className="text-lg font-bold text-qs-text">Print / Save PDF</h2>
+                <p className="text-xs text-qs-text-muted mt-0.5">Select a layout, preview your quotation, then print or save as PDF.</p>
               </div>
               <button
                 onClick={onClose}
-                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="rounded-full p-2 text-qs-text-muted hover:bg-qs-inset hover:text-qs-text transition-colors"
               >
                 <X size={18} />
               </button>
@@ -158,8 +158,8 @@ export default function PrintModal({ open, layout, setLayout, onClose, ...layout
             {/* Body */}
             <div className="flex flex-1 overflow-hidden">
               {/* Left: Layout selector */}
-              <div className="w-52 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4 overflow-y-auto">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Layout</p>
+              <div className="w-52 flex-shrink-0 border-r border-qs-border bg-qs-bg p-4 overflow-y-auto">
+                <p className="text-[10px] font-black uppercase tracking-widest text-qs-text-muted mb-3">Layout</p>
                 <div className="space-y-2">
                   {LAYOUTS.map((l) => (
                     <button
@@ -167,22 +167,22 @@ export default function PrintModal({ open, layout, setLayout, onClose, ...layout
                       onClick={() => setLayout(l.id)}
                       className={`w-full rounded-xl border-2 p-2.5 text-left transition-all hover:shadow-md ${
                         layout === l.id
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950 shadow-md'
-                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                          ? 'border-qs-primary bg-qs-soft shadow-md'
+                          : 'border-qs-border bg-qs-surface hover:border-qs-text-muted'
                       }`}
                     >
-                      <div className={`w-full h-16 mb-2 rounded overflow-hidden border ${layout === l.id ? 'border-blue-200 dark:border-blue-800' : 'border-gray-100 dark:border-gray-700'}`}>
+                      <div className={`w-full h-16 mb-2 rounded overflow-hidden border ${layout === l.id ? 'border-qs-primary/40' : 'border-qs-border'}`}>
                         {l.preview}
                       </div>
-                      <p className={`text-xs font-bold ${layout === l.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{l.name}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-tight">{l.desc}</p>
+                      <p className={`text-xs font-bold ${layout === l.id ? 'text-qs-primary' : 'text-qs-text'}`}>{l.name}</p>
+                      <p className="text-[10px] text-qs-text-muted mt-0.5 leading-tight">{l.desc}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Right: Scaled A4 preview */}
-              <div className="flex-1 bg-gray-100 dark:bg-gray-950 overflow-auto flex justify-center pt-8 pb-4 px-4">
+              <div className="flex-1 bg-qs-inset overflow-auto flex justify-center pt-8 pb-4 px-4">
                 {/* Outer wrapper clips to the scaled size */}
                 <div style={{ width: scaledW, height: scaledH, flexShrink: 0, overflow: 'hidden', borderRadius: 4 }}>
                   <div style={{ transform: `scale(${SCALE})`, transformOrigin: 'top left', width: A4_W_PX }}>
@@ -193,20 +193,20 @@ export default function PrintModal({ open, layout, setLayout, onClose, ...layout
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex-shrink-0">
-              <p className="text-xs text-gray-400 dark:text-gray-500">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-qs-border bg-qs-bg flex-shrink-0">
+              <p className="text-xs text-qs-text-muted">
                 Tip: Your browser will open the system print dialog. Choose <strong>Save as PDF</strong> to download.
               </p>
               <div className="flex items-center gap-3">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-qs-text-sec border border-qs-border hover:bg-qs-inset transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-qs-primary hover:bg-qs-hover transition-colors shadow-sm"
                 >
                   <Printer size={15} />
                   Print / Save as PDF

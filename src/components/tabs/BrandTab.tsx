@@ -9,9 +9,9 @@ interface BrandTabProps {
   handleImageUpload: (field: 'logoDataUrl' | 'signDataUrl', file: File) => void;
 }
 
-const inputClass = 'w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 focus:border-blue-500 focus:outline-none';
-const labelClass = 'text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400';
-const sectionClass = 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm';
+const inputClass = 'w-full rounded-lg border border-qs-border bg-qs-bg text-qs-text px-4 py-2 focus:border-qs-primary focus:outline-none';
+const labelClass = 'text-xs font-bold uppercase tracking-wider text-qs-text-sec';
+const sectionClass = 'rounded-xl border border-qs-border bg-qs-surface p-6 shadow-sm';
 
 export default function BrandTab({ brand, updateBrand, handleImageUpload }: BrandTabProps) {
   return (
@@ -19,7 +19,7 @@ export default function BrandTab({ brand, updateBrand, handleImageUpload }: Bran
 
       {/* Company Details */}
       <section className={sectionClass}>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Company Details</h2>
+        <h2 className="mb-4 text-lg font-semibold text-qs-text">Company Details</h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {[
             { label: 'Company Name', key: 'companyName', placeholder: 'Acme Inc.' },
@@ -43,22 +43,22 @@ export default function BrandTab({ brand, updateBrand, handleImageUpload }: Bran
 
       {/* Visual Identity */}
       <section className={sectionClass}>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Visual Identity</h2>
+        <h2 className="mb-4 text-lg font-semibold text-qs-text">Visual Identity</h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Primary Color */}
           <div className="space-y-2">
             <label className={labelClass}>Primary Color</label>
             <div className="flex items-center gap-3">
-              <input type="color" value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-gray-200 dark:border-gray-600" />
-              <input type="text"  value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none font-mono" placeholder="#3498db" />
+              <input type="color" value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-qs-border" />
+              <input type="text"  value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="w-full rounded-lg border border-qs-border bg-qs-bg text-qs-text px-3 py-2 text-sm focus:border-qs-primary focus:outline-none font-mono" placeholder="#3498db" />
             </div>
           </div>
           {/* Dark Color */}
           <div className="space-y-2">
             <label className={labelClass}>Table Header Color</label>
             <div className="flex items-center gap-3">
-              <input type="color" value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-gray-200 dark:border-gray-600" />
-              <input type="text"  value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none font-mono" placeholder="#2c3e50" />
+              <input type="color" value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-qs-border" />
+              <input type="text"  value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="w-full rounded-lg border border-qs-border bg-qs-bg text-qs-text px-3 py-2 text-sm focus:border-qs-primary focus:outline-none font-mono" placeholder="#2c3e50" />
             </div>
           </div>
           {/* Currency */}
@@ -73,29 +73,29 @@ export default function BrandTab({ brand, updateBrand, handleImageUpload }: Bran
 
       {/* Logo & Signature */}
       <section className={sectionClass}>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Logo &amp; Signature</h2>
+        <h2 className="mb-4 text-lg font-semibold text-qs-text">Logo &amp; Signature</h2>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           {/* Logo */}
           <div className="space-y-3">
             <label className={labelClass}>Company Logo</label>
-            {brand.logoDataUrl && <img src={brand.logoDataUrl} alt="Logo preview" className="h-20 object-contain rounded border border-gray-100 dark:border-gray-600 p-2" />}
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors">
+            {brand.logoDataUrl && <img src={brand.logoDataUrl} alt="Logo preview" className="h-20 object-contain rounded border border-qs-border p-2" />}
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-qs-border bg-qs-bg px-4 py-3 text-sm text-qs-text-sec hover:border-qs-primary hover:text-qs-primary transition-colors">
               <Upload size={16} />
               {brand.logoDataUrl ? 'Replace Logo' : 'Upload Logo'}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload('logoDataUrl', e.target.files[0])} />
             </label>
-            {brand.logoDataUrl && <button onClick={() => updateBrand({ logoDataUrl: '' })} className="text-xs text-red-500 hover:underline">Remove logo</button>}
+            {brand.logoDataUrl && <button onClick={() => updateBrand({ logoDataUrl: '' })} className="text-xs text-qs-error hover:underline">Remove logo</button>}
           </div>
           {/* Signature */}
           <div className="space-y-3">
             <label className={labelClass}>Authorized Signature</label>
-            {brand.signDataUrl && <img src={brand.signDataUrl} alt="Signature preview" className="h-20 object-contain rounded border border-gray-100 dark:border-gray-600 p-2" />}
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors">
+            {brand.signDataUrl && <img src={brand.signDataUrl} alt="Signature preview" className="h-20 object-contain rounded border border-qs-border p-2" />}
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-qs-border bg-qs-bg px-4 py-3 text-sm text-qs-text-sec hover:border-qs-primary hover:text-qs-primary transition-colors">
               <Upload size={16} />
               {brand.signDataUrl ? 'Replace Signature' : 'Upload Signature'}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload('signDataUrl', e.target.files[0])} />
             </label>
-            {brand.signDataUrl && <button onClick={() => updateBrand({ signDataUrl: '' })} className="text-xs text-red-500 hover:underline">Remove signature</button>}
+            {brand.signDataUrl && <button onClick={() => updateBrand({ signDataUrl: '' })} className="text-xs text-qs-error hover:underline">Remove signature</button>}
           </div>
         </div>
       </section>
