@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Printer, Download, Mail, Phone, Globe, MapPin } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { Plus, Trash2, Printer, Upload, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import logoUrl from './assets/images/logo.png';
-import signUrl from './assets/images/rashmi-sign.png';
+import { useAuth } from './contexts/AuthContext';
+import AuthPage from './components/AuthPage';
 
 interface QuotationItem {
   id: string;
@@ -25,14 +25,40 @@ interface QuotationData {
   deliveryTime: string;
 }
 
-const QUALON_BLUE = '#3498db';
-const QUALON_DARK = '#2c3e50';
+interface BrandSettings {
+  companyName: string;
+  phone: string;
+  address: string;
+  website: string;
+  primaryColor: string;
+  darkColor: string;
+  currency: string;
+  logoDataUrl: string;
+  signDataUrl: string;
+}
 
-const Logo = () => (
-  <div className="flex items-center">
-    <img src={logoUrl} alt="Qualon Logo" className="h-16 object-contain" />
-  </div>
-);
+const CURRENCIES = ['USD', 'AUD', 'EUR', 'GBP', 'CAD', 'SGD', 'AED', 'INR'];
+
+const DEFAULT_BRAND: BrandSettings = {
+  companyName: 'My Company',
+  phone: '+1 000 000 0000',
+  address: '123 Main St, City, Country',
+  website: 'https://example.com',
+  primaryColor: '#3498db',
+  darkColor: '#2c3e50',
+  currency: 'USD',
+  logoDataUrl: '',
+  signDataUrl: '',
+};
+
+function loadBrand(): BrandSettings {
+  try {
+    const saved = localStorage.getItem('quotation_brand');
+    return saved ? { ...DEFAULT_BRAND, ...JSON.parse(saved) } : DEFAULT_BRAND;
+  } catch {
+    return DEFAULT_BRAND;
+  }
+}
 
 export default function App() {
   const [data, setData] = useState<QuotationData>({
@@ -65,9 +91,24 @@ export default function App() {
     deliveryTime: '21 Days',
   });
 
-  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+  const [activeTab, setActiveTab] = useState<'edit' | 'preview' | 'brand'>('brand');
   const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
   const [discountValue, setDiscountValue] = useState<number>(0);
+  const [brand, setBrand] = useState<BrandSettings>(loadBrand);
+
+  const updateBrand = useCallback((patch: Partial<BrandSettings>) => {
+    setBrand(prev => {
+      const next = { ...prev, ...patch };
+      localStorage.setItem('quotation_brand', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const handleImageUpload = useCallback((field: 'logoDataUrl' | 'signDataUrl', file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => updateBrand({ [field]: e.target?.result as string });
+    reader.readAsDataURL(file);
+  }, [updateBrand]);
 
   const subTotal = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const discountAmount = discountValue > 0
@@ -76,6 +117,7 @@ export default function App() {
       : Math.min(discountValue, subTotal)
     : 0;
   const total = subTotal - discountAmount;
+  const cur = brand.currency;
 
   const addItem = () => {
     const newItem: QuotationItem = {
@@ -99,45 +141,158 @@ export default function App() {
     });
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
+
+  const { user, loading, signOut } = useAuth();
+
+  // While Supabase resolves the session, show a minimal loader
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-500">Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!user) return <AuthPage />;
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       {/* Navigation */}
       <nav className="sticky top-0 z-10 border-b bg-white px-6 py-4 print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <Logo />
+          {/* Dynamic Logo */}
+          <div className="flex items-center">
+            {brand.logoDataUrl
+              ? <img src={brand.logoDataUrl} alt="Logo" className="h-14 object-contain" />
+              : <span className="text-xl font-bold tracking-widest text-gray-800">{brand.companyName}</span>
+            }
+          </div>
           <div className="flex items-center gap-4">
             <div className="flex rounded-lg bg-gray-100 p-1">
-              <button
-                onClick={() => setActiveTab('edit')}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'edit' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => setActiveTab('preview')}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'preview' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Preview
-              </button>
+              <button onClick={() => setActiveTab('brand')} className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'brand' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Brand</button>
+              <button onClick={() => setActiveTab('edit')} className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'edit' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Edit</button>
+              <button onClick={() => setActiveTab('preview')} className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'preview' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Preview</button>
             </div>
-            <button
-              onClick={handlePrint}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-            >
+            <button onClick={handlePrint} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
               <Printer size={16} />
               Print / Save PDF
             </button>
+            {/* User Menu */}
+            <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-medium text-gray-800 truncate max-w-[150px]">{user.email}</p>
+              </div>
+              <button
+                onClick={signOut}
+                title="Sign out"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors"
+              >
+                <LogOut size={14} />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
       <main className="mx-auto max-w-5xl p-6 print:p-0">
+
+        {/* ── BRAND TAB ── */}
+        <div className={`${activeTab === 'brand' ? 'block' : 'hidden'} print:hidden`}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid gap-8">
+
+            {/* Company Details */}
+            <section className="rounded-xl border bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-lg font-semibold">Company Details</h2>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {[
+                  { label: 'Company Name', key: 'companyName', placeholder: 'Acme Inc.' },
+                  { label: 'Phone', key: 'phone', placeholder: '+1 000 000 0000' },
+                  { label: 'Address', key: 'address', placeholder: '123 Main St, City' },
+                  { label: 'Website', key: 'website', placeholder: 'https://example.com' },
+                ].map(({ label, key, placeholder }) => (
+                  <div key={key} className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500">{label}</label>
+                    <input
+                      type="text"
+                      value={(brand as any)[key]}
+                      onChange={(e) => updateBrand({ [key]: e.target.value } as any)}
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                      placeholder={placeholder}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Visual Identity */}
+            <section className="rounded-xl border bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-lg font-semibold">Visual Identity</h2>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {/* Primary Color */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Primary Color</label>
+                  <div className="flex items-center gap-3">
+                    <input type="color" value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-gray-200" />
+                    <input type="text" value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none font-mono" placeholder="#3498db" />
+                  </div>
+                </div>
+                {/* Dark Color */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Table Header Color</label>
+                  <div className="flex items-center gap-3">
+                    <input type="color" value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-gray-200" />
+                    <input type="text" value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none font-mono" placeholder="#2c3e50" />
+                  </div>
+                </div>
+                {/* Currency */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Currency</label>
+                  <select value={brand.currency} onChange={(e) => updateBrand({ currency: e.target.value })} className="w-full rounded-lg border border-gray-200 px-4 py-2 focus:border-blue-500 focus:outline-none">
+                    {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            {/* Logo & Signature */}
+            <section className="rounded-xl border bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-lg font-semibold">Logo &amp; Signature</h2>
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {/* Logo Upload */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Company Logo</label>
+                  {brand.logoDataUrl && <img src={brand.logoDataUrl} alt="Logo preview" className="h-20 object-contain rounded border border-gray-100 p-2" />}
+                  <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors">
+                    <Upload size={16} />
+                    {brand.logoDataUrl ? 'Replace Logo' : 'Upload Logo'}
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload('logoDataUrl', e.target.files[0])} />
+                  </label>
+                  {brand.logoDataUrl && <button onClick={() => updateBrand({ logoDataUrl: '' })} className="text-xs text-red-500 hover:underline">Remove logo</button>}
+                </div>
+                {/* Signature Upload */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Authorized Signature</label>
+                  {brand.signDataUrl && <img src={brand.signDataUrl} alt="Signature preview" className="h-20 object-contain rounded border border-gray-100 p-2" />}
+                  <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors">
+                    <Upload size={16} />
+                    {brand.signDataUrl ? 'Replace Signature' : 'Upload Signature'}
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload('signDataUrl', e.target.files[0])} />
+                  </label>
+                  {brand.signDataUrl && <button onClick={() => updateBrand({ signDataUrl: '' })} className="text-xs text-red-500 hover:underline">Remove signature</button>}
+                </div>
+              </div>
+            </section>
+
+          </motion.div>
+        </div>
+
+        {/* ── EDIT TAB ── */}
         <div className={`${activeTab === 'edit' ? 'block' : 'hidden'} print:hidden`}>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -311,15 +466,15 @@ export default function App() {
                   </div>
                   {discountAmount > 0 && (
                     <span className="text-xs text-green-600 font-semibold ml-auto">
-                      Saving USD {discountAmount.toFixed(2)}
+                      Saving {cur} {discountAmount.toFixed(2)}
                     </span>
                   )}
                 </div>
 
                 {discountAmount > 0 && (
                   <div className="flex w-full max-w-xs justify-between text-sm text-green-600">
-                    <span>Discount ({discountType === 'percentage' ? `${discountValue}%` : `USD ${discountValue}`}):</span>
-                    <span className="font-semibold">- USD {discountAmount.toFixed(2)}</span>
+                    <span>Discount ({discountType === 'percentage' ? `${discountValue}%` : `${cur} ${discountValue}`}):</span>
+                    <span className="font-semibold">- {cur} {discountAmount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex w-full max-w-xs justify-between border-t pt-2 text-lg font-bold text-blue-600">
@@ -336,15 +491,18 @@ export default function App() {
           <div className="w-[210mm] min-h-[297mm] bg-white p-12 shadow-2xl print:shadow-none">
             {/* PDF Header */}
             <div className="mb-12 flex items-start justify-between">
-              <Logo />
+              {brand.logoDataUrl
+                ? <img src={brand.logoDataUrl} alt="Logo" className="h-16 object-contain" />
+                : <span className="text-2xl font-bold tracking-widest" style={{ color: brand.primaryColor }}>{brand.companyName}</span>
+              }
             </div>
 
             {/* Quotation Bar */}
             <div className="relative mb-12 flex items-center justify-end">
-              <div className="absolute left-0 right-0 h-10 bg-[#3498db] opacity-20"></div>
+              <div className="absolute left-0 right-0 h-10 opacity-20" style={{ backgroundColor: brand.primaryColor }}></div>
               <div className="z-10 bg-white px-4 py-2 flex items-center gap-4">
                 <h1 className="text-4xl font-light tracking-[0.2em] text-gray-700 uppercase">QUOTATION</h1>
-                <div className="h-10 w-10 bg-[#3498db]"></div>
+                <div className="h-10 w-10" style={{ backgroundColor: brand.primaryColor }}></div>
               </div>
             </div>
 
@@ -369,7 +527,7 @@ export default function App() {
             {/* Table */}
             <table className="w-full border-collapse mb-8">
               <thead>
-                <tr className="bg-[#2c3e50] text-white text-sm">
+                <tr className="text-white text-sm" style={{ backgroundColor: brand.darkColor }}>
                   <th className="border border-gray-300 px-4 py-3 font-semibold text-center w-12">SL</th>
                   <th className="border border-gray-300 px-6 py-3 font-semibold text-left">Item Description</th>
                   <th className="border border-gray-300 px-4 py-3 font-semibold text-center w-24">Price</th>
@@ -389,9 +547,9 @@ export default function App() {
                         ))}
                       </ul>
                     </td>
-                    <td className="border border-gray-300 px-4 py-4 text-center align-top whitespace-nowrap">USD {item.price}</td>
+                    <td className="border border-gray-300 px-4 py-4 text-center align-top whitespace-nowrap">{cur} {item.price}</td>
                     <td className="border border-gray-300 px-4 py-4 text-center align-top">{item.quantity}</td>
-                    <td className="border border-gray-300 px-4 py-4 text-center align-top whitespace-nowrap">USD {item.price * item.quantity}</td>
+                    <td className="border border-gray-300 px-4 py-4 text-center align-top whitespace-nowrap">{cur} {item.price * item.quantity}</td>
                   </tr>
                 ))}
               </tbody>
@@ -407,30 +565,32 @@ export default function App() {
                 <div className="flex flex-col items-end gap-4">
                   <div className="flex gap-12 items-center">
                     <span className="text-lg font-semibold text-gray-600">Sub Total:</span>
-                    <span className="text-lg font-semibold text-gray-800">USD {subTotal.toFixed(2)}</span>
+                    <span className="text-lg font-semibold text-gray-800">{cur} {subTotal.toFixed(2)}</span>
                   </div>
 
                   {discountAmount > 0 && (
                     <div className="flex gap-12 items-center">
                       <span className="text-lg font-semibold text-gray-600">
-                        Discount ({discountType === 'percentage' ? `${discountValue}%` : `USD ${discountValue}`}):
+                        Discount ({discountType === 'percentage' ? `${discountValue}%` : `${cur} ${discountValue}`}):
                       </span>
-                      <span className="text-lg font-semibold text-green-600">- USD {discountAmount.toFixed(2)}</span>
+                      <span className="text-lg font-semibold text-green-600">- {cur} {discountAmount.toFixed(2)}</span>
                     </div>
                   )}
 
-                  <div className="w-full bg-[#3498db] flex justify-between items-center px-6 py-3 text-white">
+                  <div className="w-full flex justify-between items-center px-6 py-3 text-white" style={{ backgroundColor: brand.primaryColor }}>
                     <span className="text-xl font-bold uppercase tracking-widest">Total:</span>
-                    <span className="text-xl font-bold">USD {total.toFixed(2)}</span>
+                    <span className="text-xl font-bold">{cur} {total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Signature */}
               <div className="mt-8 text-center self-end mr-8">
-                <div className="mb-[-15px]">
-                  <img src={signUrl} alt="Authorized Signature" className="mx-auto h-24 object-contain" />
-                </div>
+                {brand.signDataUrl && (
+                  <div className="mb-[-15px]">
+                    <img src={brand.signDataUrl} alt="Authorized Signature" className="mx-auto h-24 object-contain" />
+                  </div>
+                )}
                 <div className="w-48 border-t-2 border-gray-800 mx-auto pt-2">
                   <span className="font-bold text-gray-800">Authorized Sign</span>
                 </div>
@@ -439,12 +599,12 @@ export default function App() {
 
             {/* Footer */}
             <div className="mt-auto pt-24 text-center">
-              <div className="border-t border-[#3498db] pt-4 flex justify-center gap-4 text-[11px] text-gray-500 font-medium whitespace-nowrap flex-wrap">
-                <span>+61449176357</span>
-                <span className="text-[#3498db] hidden sm:inline">|</span>
-                <span>10, Lestrange St Glenside SA 5065</span>
-                <span className="text-[#3498db] hidden sm:inline">|</span>
-                <span>https://qualon.xyz</span>
+              <div className="pt-4 flex justify-center gap-4 text-[11px] text-gray-500 font-medium whitespace-nowrap flex-wrap" style={{ borderTop: `1px solid ${brand.primaryColor}` }}>
+                {brand.phone && <span>{brand.phone}</span>}
+                {brand.phone && brand.address && <span style={{ color: brand.primaryColor }} className="hidden sm:inline">|</span>}
+                {brand.address && <span>{brand.address}</span>}
+                {brand.address && brand.website && <span style={{ color: brand.primaryColor }} className="hidden sm:inline">|</span>}
+                {brand.website && <span>{brand.website}</span>}
               </div>
             </div>
           </div>
