@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import AuthPage from './components/AuthPage';
 import OutOfCreditsModal from './components/OutOfCreditsModal';
+import PrintModal from './components/PrintModal';
 import AppNav from './components/layout/AppNav';
 import AITab from './components/tabs/AITab';
 import BrandTab from './components/tabs/BrandTab';
@@ -62,6 +63,7 @@ export default function App() {
   const [aiExtracting, setAiExtracting] = useState(false);
   const [aiSuccess, setAiSuccess] = useState<{ itemCount: number; clientName: string } | null>(null);
   const [showOutOfCredits, setShowOutOfCredits] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   // ── Computed totals ───────────────────────────────────────────────────────
   const subTotal = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -157,6 +159,23 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <OutOfCreditsModal open={showOutOfCredits} onClose={() => setShowOutOfCredits(false)} />
+      <PrintModal
+        open={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        layout={layout}
+        setLayout={setLayout}
+        data={data}
+        brand={brand}
+        discountType={discountType}
+        discountValue={discountValue}
+        discountAmount={discountAmount}
+        taxRate={taxRate}
+        taxAmount={taxAmount}
+        subTotal={subTotal}
+        total={total}
+        cur={cur}
+        terms={terms}
+      />
 
       <AppNav
         activeTab={activeTab}
@@ -164,7 +183,7 @@ export default function App() {
         brand={brand}
         credits={credits}
         setShowOutOfCredits={setShowOutOfCredits}
-        handlePrint={() => window.print()}
+        onOpenPrintModal={() => setShowPrintModal(true)}
         user={user}
         signOut={signOut}
         isDark={isDark}

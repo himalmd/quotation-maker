@@ -10,7 +10,7 @@ interface AppNavProps {
   brand: BrandSettings;
   credits: number | null;
   setShowOutOfCredits: (v: boolean) => void;
-  handlePrint: () => void;
+  onOpenPrintModal: () => void;
   user: User | null;
   signOut: () => Promise<void>;
   isDark: boolean;
@@ -19,7 +19,7 @@ interface AppNavProps {
 
 export default function AppNav({
   activeTab, setActiveTab, brand, credits,
-  setShowOutOfCredits, handlePrint, user, signOut,
+  setShowOutOfCredits, onOpenPrintModal, user, signOut,
   isDark, toggleTheme,
 }: AppNavProps) {
   const tabBtn = (tab: Tab, label: React.ReactNode) => (
@@ -82,14 +82,16 @@ export default function AppNav({
             {credits === null ? '…' : `${credits} credits`}
           </button>
 
-          {/* Print */}
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-            <Printer size={16} />
-            Print / Save PDF
-          </button>
+          {/* Print — only on Edit / Preview tabs */}
+          {(activeTab === 'edit' || activeTab === 'preview') && (
+            <button
+              onClick={onOpenPrintModal}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            >
+              <Printer size={16} />
+              Print / Save PDF
+            </button>
+          )}
 
           {/* User Menu */}
           <div className="flex items-center gap-3 pl-3 border-l border-gray-200 dark:border-gray-700">
