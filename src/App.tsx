@@ -4,10 +4,13 @@
  */
 
 import { useState, useRef, useCallback } from 'react';
-import { Plus, Trash2, Printer, Upload, LogOut } from 'lucide-react';
+import { Plus, Trash2, Printer, Upload, LogOut, Sparkles, Wand2, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from './contexts/AuthContext';
 import AuthPage from './components/AuthPage';
+import OutOfCreditsModal from './components/OutOfCreditsModal';
+import { generateItemDescription, extractQuotationFromConversation } from './lib/gemini';
+import { useCredits, CREDIT_COSTS } from './hooks/useCredits';
 
 interface QuotationItem {
   id: string;
@@ -91,10 +94,24 @@ export default function App() {
     deliveryTime: '21 Days',
   });
 
-  const [activeTab, setActiveTab] = useState<'edit' | 'preview' | 'brand'>('brand');
+  const [activeTab, setActiveTab] = useState<'ai' | 'edit' | 'preview' | 'brand'>('ai');
   const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
   const [discountValue, setDiscountValue] = useState<number>(0);
+  const [taxRate, setTaxRate] = useState<number>(0);
+  const [terms, setTerms] = useState<string>(
+    '1. This quotation is valid for 30 days from the date of issue.\n' +
+    '2. A 50% advance payment is required to commence work.\n' +
+    '3. The remaining balance is due upon project completion.\n' +
+    '4. Prices are subject to change without prior notice after the validity period.'
+  );
+  const [aiLoading, setAiLoading] = useState<Record<string, boolean>>({});
+  const [aiConversation, setAiConversation] = useState('');
+  const [aiExtracting, setAiExtracting] = useState(false);
+  const [aiSuccess, setAiSuccess] = useState<{ itemCount: number; clientName: string } | null>(null);
+  const [showOutOfCredits, setShowOutOfCredits] = useState(false);
   const [brand, setBrand] = useState<BrandSettings>(loadBrand);
+
+  const { credits, canAfford, deductCredits } = useCredits();
 
   const updateBrand = useCallback((patch: Partial<BrandSettings>) => {
     setBrand(prev => {
@@ -116,7 +133,9 @@ export default function App() {
       ? Math.min((subTotal * discountValue) / 100, subTotal)
       : Math.min(discountValue, subTotal)
     : 0;
-  const total = subTotal - discountAmount;
+  const afterDiscount = subTotal - discountAmount;
+  const taxAmount = taxRate > 0 ? (afterDiscount * taxRate) / 100 : 0;
+  const total = afterDiscount + taxAmount;
   const cur = brand.currency;
 
   const addItem = () => {
@@ -141,6 +160,48 @@ export default function App() {
     });
   };
 
+  const handleAIGenerate = useCallback(async (itemId: string, currentDescription: string) => {
+    const prompt = currentDescription.trim();
+    if (!prompt) return;
+    if (!canAfford(CREDIT_COSTS.ITEM_REWRITE)) { setShowOutOfCredits(true); return; }
+    setAiLoading(prev => ({ ...prev, [itemId]: true }));
+    try {
+      const result = await generateItemDescription(prompt);
+      const deducted = await deductCredits(CREDIT_COSTS.ITEM_REWRITE);
+      if (!deducted) { setShowOutOfCredits(true); return; }
+      updateItem(itemId, 'description', result.description);
+      updateItem(itemId, 'details', result.details);
+    } catch (err: any) {
+      alert(err.message ?? 'AI generation failed. Please try again.');
+    } finally {
+      setAiLoading(prev => ({ ...prev, [itemId]: false }));
+    }
+  }, [updateItem, canAfford, deductCredits]);
+
+  const handleExtractQuotation = useCallback(async () => {
+    if (!aiConversation.trim()) return;
+    if (!canAfford(CREDIT_COSTS.FULL_QUOTATION)) { setShowOutOfCredits(true); return; }
+    setAiExtracting(true);
+    setAiSuccess(null);
+    try {
+      const result = await extractQuotationFromConversation(aiConversation);
+      const deducted = await deductCredits(CREDIT_COSTS.FULL_QUOTATION);
+      if (!deducted) { setShowOutOfCredits(true); return; }
+      setData(prev => ({
+        ...prev,
+        clientName: result.clientName || prev.clientName,
+        deliveryTime: result.deliveryTime || prev.deliveryTime,
+        items: result.items,
+      }));
+      setAiSuccess({ itemCount: result.items.length, clientName: result.clientName });
+      setTimeout(() => setActiveTab('edit'), 1200);
+    } catch (err: any) {
+      alert(err.message ?? 'Extraction failed. Please try again.');
+    } finally {
+      setAiExtracting(false);
+    }
+  }, [aiConversation, canAfford, deductCredits]);
+
   const handlePrint = () => window.print();
 
   const { user, loading, signOut } = useAuth();
@@ -162,6 +223,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
+      <OutOfCreditsModal open={showOutOfCredits} onClose={() => setShowOutOfCredits(false)} />
       {/* Navigation */}
       <nav className="sticky top-0 z-10 border-b bg-white px-6 py-4 print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
@@ -174,10 +236,28 @@ export default function App() {
           </div>
           <div className="flex items-center gap-4">
             <div className="flex rounded-lg bg-gray-100 p-1">
+              <button onClick={() => setActiveTab('ai')} className={`rounded-md px-4 py-2 text-sm font-medium transition-all flex items-center gap-1.5 ${activeTab === 'ai' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                <Wand2 size={14} />
+                AI
+              </button>
               <button onClick={() => setActiveTab('brand')} className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'brand' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Brand</button>
               <button onClick={() => setActiveTab('edit')} className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'edit' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Edit</button>
               <button onClick={() => setActiveTab('preview')} className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${activeTab === 'preview' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Preview</button>
             </div>
+            {/* Credit Badge */}
+            <button
+              onClick={() => { if (credits !== null && credits === 0) setShowOutOfCredits(true); }}
+              className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                credits === null ? 'border-gray-200 text-gray-400' :
+                credits === 0 ? 'border-red-200 bg-red-50 text-red-600 cursor-pointer hover:bg-red-100' :
+                credits <= 20 ? 'border-amber-200 bg-amber-50 text-amber-600' :
+                'border-gray-200 bg-gray-50 text-gray-600'
+              }`}
+              title="AI Credits remaining"
+            >
+              <Zap size={12} className={credits !== null && credits <= 20 ? 'text-amber-500' : 'text-gray-400'} />
+              {credits === null ? '…' : `${credits} credits`}
+            </button>
             <button onClick={handlePrint} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
               <Printer size={16} />
               Print / Save PDF
@@ -201,6 +281,78 @@ export default function App() {
       </nav>
 
       <main className="mx-auto max-w-5xl p-6 print:p-0">
+
+        {/* ── AI TAB ── */}
+        <div className={`${activeTab === 'ai' ? 'block' : 'hidden'} print:hidden`}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid gap-6">
+
+            {/* Header */}
+            <div className="rounded-xl border bg-gradient-to-br from-purple-50 to-white p-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-600">
+                  <Wand2 size={20} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">AI Quotation Generator</h2>
+                  <p className="text-sm text-gray-500">Paste a client conversation and let AI build the entire quotation for you.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Conversation Input */}
+            <section className="rounded-xl border bg-white p-6 shadow-sm">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 block">Client Conversation</label>
+              <p className="text-xs text-gray-400 mb-3">Paste any conversation — WhatsApp, email, Slack message, meeting notes. The AI will extract client name, services, prices, quantities, and delivery time.</p>
+              <textarea
+                value={aiConversation}
+                onChange={(e) => { setAiConversation(e.target.value); setAiSuccess(null); }}
+                rows={14}
+                className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100 resize-y font-mono leading-relaxed"
+                placeholder={`Paste your client conversation here...
+
+Example:
+Hi, I'm Sarah from Bloom Bakery. We need a new website.
+- 6 pages total (Home, About, Menu, Gallery, Blog, Contact)
+- We have 24 blog posts ready
+- Need it done in 3 weeks
+- Budget is around $800 for the main site, $5 per blog post
+Can you help?`}
+              />
+
+              {/* Success Banner */}
+              <AnimatePresence>
+                {aiSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-3 flex items-center gap-3 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700"
+                  >
+                    <span className="text-lg">✓</span>
+                    <span>
+                      <strong>{aiSuccess.itemCount} line items</strong> extracted for <strong>{aiSuccess.clientName}</strong>. Switching to Edit tab…
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-xs text-gray-400">Tip: The more detail in the conversation, the better the quotation.</p>
+                <button
+                  onClick={handleExtractQuotation}
+                  disabled={!aiConversation.trim() || aiExtracting}
+                  className="flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: aiExtracting ? '#7c3aed' : 'linear-gradient(135deg, #7c3aed, #6d28d9)' }}
+                >
+                  {aiExtracting
+                    ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Analysing conversation…</>
+                    : <><Wand2 size={16} />Generate Quotation</>}
+                </button>
+              </div>
+            </section>
+
+          </motion.div>
+        </div>
 
         {/* ── BRAND TAB ── */}
         <div className={`${activeTab === 'brand' ? 'block' : 'hidden'} print:hidden`}>
@@ -377,19 +529,33 @@ export default function App() {
 
                       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                         <div className="lg:col-span-6 space-y-2">
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Description</label>
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Description</label>
+                            <button
+                              type="button"
+                              onClick={() => handleAIGenerate(item.id, item.description)}
+                              disabled={!item.description.trim() || aiLoading[item.id]}
+                              title="Generate with AI"
+                              className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold text-purple-600 border border-purple-200 bg-purple-50 hover:bg-purple-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {aiLoading[item.id]
+                                ? <span className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                                : <Sparkles size={11} />}
+                              {aiLoading[item.id] ? 'Generating…' : 'AI Generate'}
+                            </button>
+                          </div>
                           <input
                             type="text"
                             value={item.description}
                             onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                             className="w-full rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
-                            placeholder="Item name"
+                            placeholder="Type a brief description, then click AI Generate"
                           />
                           <textarea
                             value={item.details.join('\n')}
                             onChange={(e) => updateItem(item.id, 'details', e.target.value.split('\n'))}
                             className="w-full rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
-                            placeholder="Details (one per line)"
+                            placeholder="Details (one per line) — auto-filled by AI"
                             rows={3}
                           />
                         </div>
@@ -477,11 +643,46 @@ export default function App() {
                     <span className="font-semibold">- {cur} {discountAmount.toFixed(2)}</span>
                   </div>
                 )}
+                {/* Tax Controls */}
+                <div className="flex w-full items-center gap-3 flex-wrap py-2 border-t pt-3">
+                  <span className="text-sm font-medium text-gray-500 mr-1">Tax / VAT:</span>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={taxRate || ''}
+                      onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                      className="w-24 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                      placeholder="0"
+                    />
+                    <span className="text-xs font-medium text-gray-400">%</span>
+                  </div>
+                  {taxAmount > 0 && (
+                    <span className="text-xs text-gray-500 ml-auto">
+                      Tax: {cur} {taxAmount.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+
                 <div className="flex w-full max-w-xs justify-between border-t pt-2 text-lg font-bold text-blue-600">
                   <span>Total:</span>
-                  <span>USD {total.toFixed(2)}</span>
+                  <span>{cur} {total.toFixed(2)}</span>
                 </div>
               </div>
+            </section>
+
+            {/* Terms & Conditions */}
+            <section className="rounded-xl border bg-white p-6 shadow-sm">
+              <h2 className="mb-1 text-lg font-semibold">Terms &amp; Conditions</h2>
+              <p className="text-xs text-gray-400 mb-3">These will appear at the bottom of the quotation PDF.</p>
+              <textarea
+                value={terms}
+                onChange={(e) => setTerms(e.target.value)}
+                rows={6}
+                className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:border-blue-500 focus:outline-none resize-y"
+                placeholder="Enter your terms and conditions, one per line..."
+              />
             </section>
           </motion.div>
         </div>
@@ -577,6 +778,13 @@ export default function App() {
                     </div>
                   )}
 
+                  {taxAmount > 0 && (
+                    <div className="flex gap-12 items-center">
+                      <span className="text-lg font-semibold text-gray-600">Tax ({taxRate}%):</span>
+                      <span className="text-lg font-semibold text-gray-700">+ {cur} {taxAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+
                   <div className="w-full flex justify-between items-center px-6 py-3 text-white" style={{ backgroundColor: brand.primaryColor }}>
                     <span className="text-xl font-bold uppercase tracking-widest">Total:</span>
                     <span className="text-xl font-bold">{cur} {total.toFixed(2)}</span>
@@ -597,8 +805,20 @@ export default function App() {
               </div>
             </div>
 
+            {/* Terms & Conditions on PDF */}
+            {terms.trim() && (
+              <div className="mt-10 border-t pt-6">
+                <h5 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Terms &amp; Conditions</h5>
+                <ol className="space-y-1">
+                  {terms.split('\n').filter(Boolean).map((line, i) => (
+                    <li key={i} className="text-[11px] text-gray-500 leading-relaxed">{line}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+
             {/* Footer */}
-            <div className="mt-auto pt-24 text-center">
+            <div className="mt-auto pt-10 text-center">
               <div className="pt-4 flex justify-center gap-4 text-[11px] text-gray-500 font-medium whitespace-nowrap flex-wrap" style={{ borderTop: `1px solid ${brand.primaryColor}` }}>
                 {brand.phone && <span>{brand.phone}</span>}
                 {brand.phone && brand.address && <span style={{ color: brand.primaryColor }} className="hidden sm:inline">|</span>}
