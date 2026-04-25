@@ -13,8 +13,9 @@ import BrandTab from './components/tabs/BrandTab';
 import EditTab from './components/tabs/EditTab';
 import PreviewTab from './components/tabs/PreviewTab';
 import { generateItemDescription, extractQuotationFromConversation } from './lib/gemini';
-import { loadBrand, DEFAULT_BRAND } from './lib/brandStorage';
+import { loadBrand } from './lib/brandStorage';
 import { useCredits, CREDIT_COSTS } from './hooks/useCredits';
+import { useTheme } from './hooks/useTheme';
 import type { QuotationData, QuotationItem, BrandSettings } from './types';
 
 type Tab = 'ai' | 'edit' | 'preview' | 'brand';
@@ -41,6 +42,7 @@ export default function App() {
   // ── Auth ──────────────────────────────────────────────────────────────────
   const { user, loading, signOut } = useAuth();
   const { credits, canAfford, deductCredits } = useCredits();
+  const { isDark, toggleTheme } = useTheme();
 
   // ── Core state ────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<Tab>('ai');
@@ -152,7 +154,7 @@ export default function App() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <OutOfCreditsModal open={showOutOfCredits} onClose={() => setShowOutOfCredits(false)} />
 
       <AppNav
@@ -164,6 +166,8 @@ export default function App() {
         handlePrint={() => window.print()}
         user={user}
         signOut={signOut}
+        isDark={isDark}
+        toggleTheme={toggleTheme}
       />
 
       <main className="p-6 print:p-0">

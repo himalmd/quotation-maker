@@ -9,13 +9,17 @@ interface BrandTabProps {
   handleImageUpload: (field: 'logoDataUrl' | 'signDataUrl', file: File) => void;
 }
 
+const inputClass = 'w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 focus:border-blue-500 focus:outline-none';
+const labelClass = 'text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400';
+const sectionClass = 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm';
+
 export default function BrandTab({ brand, updateBrand, handleImageUpload }: BrandTabProps) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid gap-8">
 
       {/* Company Details */}
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">Company Details</h2>
+      <section className={sectionClass}>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Company Details</h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {[
             { label: 'Company Name', key: 'companyName', placeholder: 'Acme Inc.' },
@@ -24,12 +28,12 @@ export default function BrandTab({ brand, updateBrand, handleImageUpload }: Bran
             { label: 'Website',      key: 'website',      placeholder: 'https://example.com' },
           ].map(({ label, key, placeholder }) => (
             <div key={key} className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-gray-500">{label}</label>
+              <label className={labelClass}>{label}</label>
               <input
                 type="text"
                 value={(brand as any)[key]}
                 onChange={(e) => updateBrand({ [key]: e.target.value } as any)}
-                className="w-full rounded-lg border border-gray-200 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className={inputClass}
                 placeholder={placeholder}
               />
             </div>
@@ -38,29 +42,29 @@ export default function BrandTab({ brand, updateBrand, handleImageUpload }: Bran
       </section>
 
       {/* Visual Identity */}
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">Visual Identity</h2>
+      <section className={sectionClass}>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Visual Identity</h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Primary Color */}
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Primary Color</label>
+            <label className={labelClass}>Primary Color</label>
             <div className="flex items-center gap-3">
-              <input type="color" value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-gray-200" />
-              <input type="text"  value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none font-mono" placeholder="#3498db" />
+              <input type="color" value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-gray-200 dark:border-gray-600" />
+              <input type="text"  value={brand.primaryColor} onChange={(e) => updateBrand({ primaryColor: e.target.value })} className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none font-mono" placeholder="#3498db" />
             </div>
           </div>
           {/* Dark Color */}
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Table Header Color</label>
+            <label className={labelClass}>Table Header Color</label>
             <div className="flex items-center gap-3">
-              <input type="color" value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-gray-200" />
-              <input type="text"  value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none font-mono" placeholder="#2c3e50" />
+              <input type="color" value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="h-10 w-14 cursor-pointer rounded border border-gray-200 dark:border-gray-600" />
+              <input type="text"  value={brand.darkColor} onChange={(e) => updateBrand({ darkColor: e.target.value })} className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none font-mono" placeholder="#2c3e50" />
             </div>
           </div>
           {/* Currency */}
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Currency</label>
-            <select value={brand.currency} onChange={(e) => updateBrand({ currency: e.target.value })} className="w-full rounded-lg border border-gray-200 px-4 py-2 focus:border-blue-500 focus:outline-none">
+            <label className={labelClass}>Currency</label>
+            <select value={brand.currency} onChange={(e) => updateBrand({ currency: e.target.value })} className={inputClass}>
               {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
@@ -68,14 +72,14 @@ export default function BrandTab({ brand, updateBrand, handleImageUpload }: Bran
       </section>
 
       {/* Logo & Signature */}
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">Logo &amp; Signature</h2>
+      <section className={sectionClass}>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Logo &amp; Signature</h2>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           {/* Logo */}
           <div className="space-y-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Company Logo</label>
-            {brand.logoDataUrl && <img src={brand.logoDataUrl} alt="Logo preview" className="h-20 object-contain rounded border border-gray-100 p-2" />}
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors">
+            <label className={labelClass}>Company Logo</label>
+            {brand.logoDataUrl && <img src={brand.logoDataUrl} alt="Logo preview" className="h-20 object-contain rounded border border-gray-100 dark:border-gray-600 p-2" />}
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors">
               <Upload size={16} />
               {brand.logoDataUrl ? 'Replace Logo' : 'Upload Logo'}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload('logoDataUrl', e.target.files[0])} />
@@ -84,9 +88,9 @@ export default function BrandTab({ brand, updateBrand, handleImageUpload }: Bran
           </div>
           {/* Signature */}
           <div className="space-y-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Authorized Signature</label>
-            {brand.signDataUrl && <img src={brand.signDataUrl} alt="Signature preview" className="h-20 object-contain rounded border border-gray-100 p-2" />}
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors">
+            <label className={labelClass}>Authorized Signature</label>
+            {brand.signDataUrl && <img src={brand.signDataUrl} alt="Signature preview" className="h-20 object-contain rounded border border-gray-100 dark:border-gray-600 p-2" />}
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors">
               <Upload size={16} />
               {brand.signDataUrl ? 'Replace Signature' : 'Upload Signature'}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload('signDataUrl', e.target.files[0])} />
