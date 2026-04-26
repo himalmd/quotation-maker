@@ -3,10 +3,7 @@ import { Plus, Trash2, Sparkles, PanelRightClose, PanelRightOpen } from 'lucide-
 import { motion, AnimatePresence } from 'motion/react';
 import type { QuotationData, QuotationItem, BrandSettings, LayoutId } from '../../types';
 import { CREDIT_COSTS } from '../../hooks/useCredits';
-import ClassicLayout from '../layouts/ClassicLayout';
-import ModernLayout  from '../layouts/ModernLayout';
-import BoldLayout    from '../layouts/BoldLayout';
-import MinimalLayout from '../layouts/MinimalLayout';
+import PdfPreview from '../PdfPreview';
 
 interface EditTabProps {
   data: QuotationData;
@@ -52,12 +49,6 @@ export default function EditTab({
   aiLoading, handleAIGenerate, addItem, removeItem, updateItem,
 }: EditTabProps) {
   const [previewOpen, setPreviewOpen] = useState(true);
-
-  const LayoutComponent =
-    layout === 'modern'  ? ModernLayout  :
-    layout === 'bold'    ? BoldLayout    :
-    layout === 'minimal' ? MinimalLayout :
-    ClassicLayout;
 
   const layoutProps = { data, brand, discountType, discountValue, discountAmount, taxRate, taxAmount, subTotal, total, cur, terms };
 
@@ -232,13 +223,13 @@ export default function EditTab({
               <PanelRightClose size={14} />
             </button>
           </div>
-          {/* Scaled A4 */}
+          {/* Multi-page A4 Preview */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden bg-qs-inset p-3">
-            <div style={{ width: Math.round(A4_W * SCALE), height: Math.round(1123 * SCALE), overflow: 'hidden', flexShrink: 0 }}>
-              <div style={{ transform: `scale(${SCALE})`, transformOrigin: 'top left', width: A4_W }}>
-                <LayoutComponent {...layoutProps} />
-              </div>
-            </div>
+            <PdfPreview
+              layout={layout}
+              layoutProps={layoutProps}
+              scale={SCALE}
+            />
           </div>
         </div>
       </div>

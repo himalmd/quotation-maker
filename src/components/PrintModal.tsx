@@ -1,15 +1,8 @@
-import { X, Printer, Download } from 'lucide-react';
+import { X, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import type { LayoutId } from '../../types';
+import type { LayoutId } from '../types';
 import type { LayoutProps } from './layouts/types';
-import ClassicLayout from './layouts/ClassicLayout';
-import ModernLayout  from './layouts/ModernLayout';
-import BoldLayout    from './layouts/BoldLayout';
-import MinimalLayout from './layouts/MinimalLayout';
-
-// A4 dimensions at 96 dpi
-const A4_W_PX = 794;
-const A4_H_PX = 1123;
+import PdfPreview from './PdfPreview';
 
 const LAYOUTS: { id: LayoutId; name: string; desc: string; preview: React.ReactNode }[] = [
   {
@@ -63,9 +56,10 @@ const LAYOUTS: { id: LayoutId; name: string; desc: string; preview: React.ReactN
         <rect x="4" y="28" width="52" height="2" rx="0" fill="#cbd5e1" />
         <rect x="4" y="31" width="52" height="2.5" rx="0" fill="#f8fafc" />
         <rect x="4" y="33.5" width="52" height="2.5" rx="0" fill="white" />
-        <rect x="30" y="52" width="26" height="2" rx="1" fill="#e5e7eb" />
-        <rect x="30" y="56" width="26" height="2" rx="1" fill="#e5e7eb" />
-        <rect x="30" y="61" width="26" height="6" rx="1" fill="#1e293b" />
+        <rect x="4" y="36" width="52" height="2.5" rx="0" fill="#f8fafc" />
+        <rect x="30" y="50" width="26" height="2" rx="1" fill="#e5e7eb" />
+        <rect x="30" y="54" width="26" height="2" rx="1" fill="#e5e7eb" />
+        <rect x="30" y="59" width="26" height="6" rx="1" fill="#1e293b" />
         <rect x="0" y="74" width="60" height="6" fill="#3b82f6" />
       </svg>
     ),
@@ -86,10 +80,12 @@ const LAYOUTS: { id: LayoutId; name: string; desc: string; preview: React.ReactN
         <rect x="4" y="26" width="52" height="1" rx="0" fill="#f1f5f9" />
         <rect x="4" y="29" width="52" height="1" rx="0" fill="#f1f5f9" />
         <rect x="4" y="32" width="52" height="1" rx="0" fill="#f1f5f9" />
-        <rect x="32" y="48" width="24" height="1" rx="0" fill="#e5e7eb" />
-        <rect x="32" y="51" width="24" height="1" rx="0" fill="#e5e7eb" />
+        <rect x="4" y="35" width="52" height="1" rx="0" fill="#f1f5f9" />
+        <rect x="32" y="47" width="24" height="1" rx="0" fill="#e5e7eb" />
+        <rect x="32" y="50" width="24" height="1" rx="0" fill="#e5e7eb" />
         <rect x="32" y="55" width="24" height="1.5" rx="0" fill="#3b82f6" />
         <rect x="32" y="57" width="24" height="3" rx="0" fill="white" />
+        <text x="32" y="61" fontSize="5" fontWeight="bold" fill="#3b82f6">TOTAL</text>
       </svg>
     ),
   },
@@ -103,20 +99,21 @@ interface PrintModalProps extends LayoutProps {
 }
 
 export default function PrintModal({ open, layout, setLayout, onClose, ...layoutProps }: PrintModalProps) {
-  const LayoutComponent =
-    layout === 'modern'  ? ModernLayout  :
-    layout === 'bold'    ? BoldLayout    :
-    layout === 'minimal' ? MinimalLayout :
-    ClassicLayout;
-
   // Scale factor to fit A4 in the preview pane (~520px wide pane)
   const SCALE = 0.62;
-  const scaledW = Math.round(A4_W_PX * SCALE);
-  const scaledH = Math.round(A4_H_PX * SCALE);
 
   const handlePrint = () => {
+    const originalTitle = document.title;
+    const safeClientName = layoutProps.data.clientName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `${layoutProps.data.quotationNumber}_${safeClientName}`;
+    
+    document.title = filename;
     onClose();
-    setTimeout(() => window.print(), 150);
+    
+    setTimeout(() => {
+      window.print();
+      document.title = originalTitle;
+    }, 150);
   };
 
   return (
@@ -181,14 +178,14 @@ export default function PrintModal({ open, layout, setLayout, onClose, ...layout
                 </div>
               </div>
 
-              {/* Right: Scaled A4 preview */}
-              <div className="flex-1 bg-qs-inset overflow-auto flex justify-center pt-8 pb-4 px-4">
-                {/* Outer wrapper clips to the scaled size */}
-                <div style={{ width: scaledW, height: scaledH, flexShrink: 0, overflow: 'hidden', borderRadius: 4 }}>
-                  <div style={{ transform: `scale(${SCALE})`, transformOrigin: 'top left', width: A4_W_PX }}>
-                    <LayoutComponent {...layoutProps} />
-                  </div>
-                </div>
+              {/* Right: Scaled multi-page preview */}
+              <div className="flex-1 bg-qs-inset overflow-y-auto p-8">
+                <PdfPreview
+                  layout={layout}
+                  layoutProps={layoutProps}
+                  scale={SCALE}
+                  className="mx-auto"
+                />
               </div>
             </div>
 
