@@ -120,7 +120,7 @@ export default function ClassicLayout({
 
       {/* Terms */}
       {terms.trim() && (
-        <div className="mt-10 border-t pt-6">
+        <div className="mt-10 border-t pt-6" style={{ breakBefore: 'page', pageBreakBefore: 'always' }}>
           <h5 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">Terms &amp; Conditions</h5>
           <ol className="space-y-1">
             {terms.split('\n').filter(Boolean).map((line, i) => (

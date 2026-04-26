@@ -1,8 +1,5 @@
 import type { QuotationData, BrandSettings, LayoutId } from '../../types';
-import ClassicLayout from '../layouts/ClassicLayout';
-import ModernLayout  from '../layouts/ModernLayout';
-import BoldLayout    from '../layouts/BoldLayout';
-import MinimalLayout from '../layouts/MinimalLayout';
+import PdfPreview from '../PdfPreview';
 
 interface PreviewTabProps {
   data: QuotationData;
@@ -115,12 +112,6 @@ export default function PreviewTab({
 }: PreviewTabProps) {
   const layoutProps = { data, brand, discountType, discountValue, discountAmount, taxRate, taxAmount, subTotal, total, cur, terms };
 
-  const LayoutComponent =
-    layout === 'modern'  ? ModernLayout  :
-    layout === 'bold'    ? BoldLayout    :
-    layout === 'minimal' ? MinimalLayout :
-    ClassicLayout;
-
   return (
     <div>
       {/* Layout Selector — hidden on print */}
@@ -137,7 +128,6 @@ export default function PreviewTab({
                   : 'border-qs-border bg-qs-surface hover:border-qs-text-muted'
               }`}
             >
-              {/* Mini preview */}
               <div className={`w-full h-20 mb-2 rounded overflow-hidden border ${layout === l.id ? 'border-qs-primary/40' : 'border-qs-border'}`}>
                 {l.preview}
               </div>
@@ -148,9 +138,14 @@ export default function PreviewTab({
         </div>
       </div>
 
-      {/* A4 Preview */}
-      <div className="flex justify-center bg-qs-inset py-10 print:bg-white print:p-0">
-        <LayoutComponent {...layoutProps} />
+      {/* Multi-page A4 Preview — scrollable, just like a PDF viewer */}
+      <div className="bg-qs-inset py-10 px-6 print:bg-white print:p-0">
+        <PdfPreview
+          layout={layout}
+          layoutProps={layoutProps}
+          scale={1}
+          className="mx-auto"
+        />
       </div>
     </div>
   );

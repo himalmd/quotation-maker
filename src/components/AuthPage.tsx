@@ -131,8 +131,8 @@ export default function AuthPage() {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 className={`mb-8 px-5 py-4 rounded-2xl text-sm font-semibold flex items-center gap-3 border ${message.type === 'error'
-                    ? 'bg-red-50 text-red-600 border-red-100'
-                    : 'bg-green-50 text-green-600 border-green-100'
+                  ? 'bg-red-50 text-red-600 border-red-100'
+                  : 'bg-green-50 text-green-600 border-green-100'
                   }`}
               >
                 <div className={`h-2 w-2 rounded-full ${message.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`} />
