@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import logoPrimary from '../assets/logo-primary.webp';
 import logoWhite from '../assets/logo-white.webp';
+import { motion, AnimatePresence } from 'motion/react';
+import { CheckCircle2, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
@@ -25,7 +27,6 @@ export default function AuthPage() {
       } else if (mode === 'signin') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // AuthContext will detect session change and redirect
       } else if (mode === 'forgot') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/`,
@@ -41,88 +42,147 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left Panel — Branding */}
-      <div
-        className="hidden md:flex md:w-1/2 flex-col items-center justify-center p-16 text-white"
-        style={{ background: 'linear-gradient(135deg, var(--qs-primary) 0%, var(--qs-secondary) 100%)' }}
-      >
-        <img src={logoWhite} alt="QuoteSuite" className="h-28 object-contain mb-10" />
-        <p className="text-lg text-white/70 text-center max-w-xs leading-relaxed">
-          Create beautiful, professional quotations in minutes. Sign in to manage your quotes.
-        </p>
+    <div className="min-h-screen flex flex-col md:flex-row bg-qs-bg font-sans">
+      {/* Left Panel — Branding & Experience */}
+      <div className="hidden md:flex md:w-[45%] lg:w-[50%] relative overflow-hidden flex-col items-center justify-center p-16 text-white">
+        {/* Animated Gradient Background */}
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            background: 'linear-gradient(135deg, #1E6BFF 0%, #0B3C8C 100%)',
+          }}
+        />
 
-        <div className="mt-16 space-y-4 w-full max-w-xs">
-          {[
-            { icon: '✦', label: 'Branded PDF quotations' },
-            { icon: '✦', label: 'Discount & currency support' },
-            { icon: '✦', label: 'Cloud-saved quote history' },
-          ].map(({ icon, label }) => (
-            <div key={label} className="flex items-center gap-3 text-white/80">
-              <span className="text-white font-bold">{icon}</span>
-              <span className="text-sm">{label}</span>
-            </div>
-          ))}
-        </div>
+        {/* Decorative Circles */}
+        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-qs-secondary/20 rounded-full blur-3xl" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="relative z-10 flex flex-col items-center text-center"
+        >
+          <img src={logoWhite} alt="QuoteSuite" className="h-32 object-contain mb-12 drop-shadow-2xl" />
+
+          <h1 className="text-4xl lg:text-5xl font-black mb-6 tracking-tight leading-[1.1]">
+            Effortless Quotations <br />
+            <span className="text-qs-secondary">for Modern Business.</span>
+          </h1>
+
+          <p className="text-xl text-white/80 max-w-md leading-relaxed font-medium">
+            Create, manage, and send professional branded PDF quotations in seconds.
+          </p>
+
+          <div className="mt-16 grid gap-4 w-full max-w-sm">
+            {[
+              { label: 'Branded PDF quotations', desc: 'Custom layouts that match your brand.' },
+              { label: 'AI Powered Generation', desc: 'Extract items from conversations instantly.' },
+              { label: 'Cloud History', desc: 'Securely access your quotes from anywhere.' },
+            ].map(({ label, desc }) => (
+              <motion.div
+                key={label}
+                whileHover={{ x: 10 }}
+                className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm text-left transition-colors hover:bg-white/10"
+              >
+                <div className="mt-1 flex-shrink-0 h-6 w-6 rounded-full bg-qs-secondary/20 flex items-center justify-center">
+                  <CheckCircle2 size={14} className="text-qs-secondary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">{label}</h3>
+                  <p className="text-xs text-white/60">{desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
-      {/* Right Panel — Form */}
-      <div className="flex flex-1 items-center justify-center p-8 bg-qs-bg">
-        <div className="w-full max-w-sm">
+      {/* Right Panel — Interactive Form */}
+      <div className="flex flex-1 items-center justify-center p-6 md:p-12 lg:p-20 bg-qs-bg">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
           {/* Mobile logo */}
-          <div className="md:hidden flex justify-center mb-8">
+          <div className="md:hidden flex justify-center mb-10">
             <img src={logoPrimary} alt="QuoteSuite" className="h-20 object-contain" />
           </div>
 
-          <h2 className="text-2xl font-bold text-qs-text mb-1">
-            {mode === 'signin' && 'Welcome back'}
-            {mode === 'signup' && 'Create an account'}
-            {mode === 'forgot' && 'Reset your password'}
-          </h2>
-          <p className="text-sm text-qs-text-sec mb-8">
-            {mode === 'signin' && "Sign in to your account to continue."}
-            {mode === 'signup' && "Join to start creating professional quotations."}
-            {mode === 'forgot' && "We'll send a reset link to your email."}
-          </p>
+          <div className="mb-10">
+            <h2 className="text-3xl font-black text-qs-text mb-2 tracking-tight">
+              {mode === 'signin' && 'Welcome back'}
+              {mode === 'signup' && 'Get started today'}
+              {mode === 'forgot' && 'Reset your password'}
+            </h2>
+            <p className="text-qs-text-sec font-medium">
+              {mode === 'signin' && "Sign in to manage your professional quotes."}
+              {mode === 'signup' && "Create your account to start generating quotes."}
+              {mode === 'forgot' && "Enter your email to receive a reset link."}
+            </p>
+          </div>
 
-          {message && (
-            <div className={`mb-5 px-4 py-3 rounded-lg text-sm ${message.type === 'error' ? 'bg-qs-error/10 text-qs-error border border-qs-error/20' : 'bg-qs-success/10 text-qs-success border border-qs-success/20'}`}>
-              {message.text}
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {message && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className={`mb-8 px-5 py-4 rounded-2xl text-sm font-semibold flex items-center gap-3 border ${message.type === 'error'
+                    ? 'bg-red-50 text-red-600 border-red-100'
+                    : 'bg-green-50 text-green-600 border-green-100'
+                  }`}
+              >
+                <div className={`h-2 w-2 rounded-full ${message.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`} />
+                {message.text}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-qs-text-muted">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-lg border border-qs-border bg-qs-surface text-qs-text px-4 py-2.5 text-sm focus:border-qs-primary focus:outline-none focus:ring-2 focus:ring-qs-primary/20 transition"
-              />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[11px] font-black uppercase tracking-[0.1em] text-qs-text-muted ml-1">Email Address</label>
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-qs-text-muted group-focus-within:text-qs-primary transition-colors" size={18} />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-qs-border bg-qs-surface text-qs-text text-sm font-medium focus:border-qs-primary focus:outline-none focus:ring-4 focus:ring-qs-primary/10 transition-all placeholder:text-qs-text-muted/50"
+                />
+              </div>
             </div>
 
             {mode !== 'forgot' && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-qs-text-muted">Password</label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  minLength={6}
-                  className="w-full rounded-lg border border-qs-border bg-qs-surface text-qs-text px-4 py-2.5 text-sm focus:border-qs-primary focus:outline-none focus:ring-2 focus:ring-qs-primary/20 transition"
-                />
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-[0.1em] text-qs-text-muted ml-1">Secure Password</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-qs-text-muted group-focus-within:text-qs-primary transition-colors" size={18} />
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    minLength={6}
+                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-qs-border bg-qs-surface text-qs-text text-sm font-medium focus:border-qs-primary focus:outline-none focus:ring-4 focus:ring-qs-primary/10 transition-all placeholder:text-qs-text-muted/50"
+                  />
+                </div>
               </div>
             )}
 
             {mode === 'signin' && (
-              <div className="flex justify-end">
-                <button type="button" onClick={() => { setMode('forgot'); setMessage(null); }} className="text-xs text-qs-primary hover:text-qs-hover hover:underline">
-                  Forgot password?
+              <div className="flex justify-end pr-1">
+                <button
+                  type="button"
+                  onClick={() => { setMode('forgot'); setMessage(null); }}
+                  className="text-xs font-bold text-qs-primary hover:text-qs-primaryHover transition-colors"
+                >
+                  Forgot your password?
                 </button>
               </div>
             )}
@@ -130,24 +190,33 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg py-2.5 text-sm font-semibold text-white bg-qs-primary hover:bg-qs-hover transition-all disabled:opacity-60"
+              className="w-full relative group overflow-hidden rounded-2xl bg-qs-primary p-4 text-sm font-black text-white shadow-xl shadow-qs-primary/20 transition-all hover:bg-qs-primaryHover hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {loading ? 'Please wait…' : mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
+              <div className="flex items-center justify-center gap-2">
+                {loading ? (
+                  <Loader2 size={20} className="animate-spin" />
+                ) : (
+                  <>
+                    <span>{mode === 'signin' ? 'Sign In to Account' : mode === 'signup' ? 'Create Free Account' : 'Send Reset Link'}</span>
+                    <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </div>
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-qs-text-sec">
-            {mode === 'signin' && (
-              <>Don't have an account?{' '}<button onClick={() => { setMode('signup'); setMessage(null); }} className="text-qs-primary hover:text-qs-hover font-medium hover:underline">Sign up</button></>
-            )}
-            {mode === 'signup' && (
-              <>Already have an account?{' '}<button onClick={() => { setMode('signin'); setMessage(null); }} className="text-qs-primary hover:text-qs-hover font-medium hover:underline">Sign in</button></>
-            )}
-            {mode === 'forgot' && (
-              <button onClick={() => { setMode('signin'); setMessage(null); }} className="text-qs-primary hover:text-qs-hover font-medium hover:underline">← Back to sign in</button>
-            )}
+          <div className="mt-10 pt-10 border-t border-qs-border text-center">
+            <p className="text-sm font-medium text-qs-text-sec">
+              {mode === 'signin' ? (
+                <>Don't have an account yet? <button onClick={() => { setMode('signup'); setMessage(null); }} className="text-qs-primary font-black hover:underline underline-offset-4 decoration-2">Create Account</button></>
+              ) : mode === 'signup' ? (
+                <>Already a member? <button onClick={() => { setMode('signin'); setMessage(null); }} className="text-qs-primary font-black hover:underline underline-offset-4 decoration-2">Sign In</button></>
+              ) : (
+                <button onClick={() => { setMode('signin'); setMessage(null); }} className="text-qs-primary font-black hover:underline underline-offset-4 decoration-2 flex items-center justify-center gap-2 mx-auto"><ArrowRight size={16} className="rotate-180" /> Back to Sign In</button>
+              )}
+            </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

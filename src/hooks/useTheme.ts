@@ -6,7 +6,7 @@ export function useTheme() {
       const saved = localStorage.getItem('theme');
       if (saved) return saved === 'dark';
     } catch {}
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return false; // Default to light mode
   });
 
   useEffect(() => {
